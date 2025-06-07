@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Html Comparison</title>
+    <link href="{{ MEDIA_URL }}css/website_tracking/style.css?v=0.3" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body class="iframe-template">
+    <div class="iframe-container">
+      {% if obj_id %}
+        <div class="button-container">
+          <div class="inner-btn-container old-btn-item">
+            {% if regen_screenshot_old %}
+              <a href= "{{ regen_screenshot_old }}">
+                  <input type="button" value="Take Screenshot of Old DiffHTML" id="take-old-diff-screenshot">
+              </a>
+            {% endif %}
+          </div>
+
+          <div class="inner-btn-container new-btn-item">
+            {% if regen_screenshot_new %}
+                <a href= "{{ regen_screenshot_new }}">
+                    <input type="button" value="Take Screenshot of New DiffHTML" id="take-new-diff-screenshot">
+               </a>
+
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <iframe srcdoc="{{ old_html }}" frameborder="0" scrolling="yes" style="height: 100%; width: 100%;" height="100%" width="100%"></iframe>
+    </div>
+
+    <div class="iframe-container">
+      <iframe srcdoc="{{ new_html }}" frameborder="0" scrolling="yes" style="height: 100%; width: 100%;" height="100%" width="100%"></iframe>
+    </div>
+  </body>
+</html>

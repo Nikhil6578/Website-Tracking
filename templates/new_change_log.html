@@ -1,0 +1,253 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+{% load cfytags %}
+
+<head>
+  <meta charset="utf-8">
+  <title>Contify - Market Intelligence Platform</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fafafa">
+  <link type="image/x-icon" rel="icon" href="{{ MEDIA_URL }}images/favicon.png?v=1.2">
+  <link rel="apple-touch-icon" href="{{ MEDIA_URL }}images/favicon.png?v=1.1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="author" content="Contify">
+  <meta property="fb:admins" content="594702886" />
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="contify.com">
+  <meta name="twitter:title" content="Contify">
+  <meta name="twitter:description" content="Contify is a Market Intelligence Platform that aggregates and curates insights from over 35,000 sources in real time to give you up to minute triggers on your prospects, customers, and their competitors and make it available when and where you need them the most">
+  <meta name="twitter:image:src" content="{{ MEDIA_URL }}images/Twitter-Card-Image.png?v=1">
+  <meta name="google-site-verification" content="XU5vCCQb2aPFk9Diuuw4gmVPKHUifYImzG1FbALJZ7w" />
+  <!-- Please remove these fonts once you connect this template with a postlogin apps -->
+  <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,200,300,300i,400,400i,500,500i,600,600i,700,700i&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Serif:100,200,300,400,400i,500,600,700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ MEDIA_URL }}{{ WST_PATH }}/image_comparison/tmp_compare.css">
+  <link href="{{ MEDIA_URL }}{{ WST_PATH }}/change_log.css?v=2.2" rel="stylesheet" type="text/css">
+  <link type="text/css" rel="stylesheet" href="{{ MEDIA_URL }}css/style/dist/main.min.css?v=0.215">
+</head>
+
+<body>
+<!--[if IE]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+<![endif]-->
+
+<div class="container website-tracker">
+  <div class="pbc-container">
+    <div class="comp-ppl-logos">
+      <img src="{{ publishedByCompany.logo }}" alt="">
+    </div>
+    <div class="web-tracking--info">
+      <h6 class="label--01 text-02 margin-bottom--2">{{ publishedByCompany.name }}</h6>
+      <p class="productive--heading-05 text-01">Website Changes</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="changelog-container">
+      <div class="container-meta">
+        <p class="label--01 text-02 margin--0 margin-bottom--2">
+          {{ numFound }} updates
+        </p>
+
+        <p class="productive--heading-03 text-01 margin--0">
+          Changelog
+        </p>
+      </div>
+
+      <div class="info-block">
+        <ul id="log-list-container" class="logs-list">
+          {% for doc in docs %}
+            <li id="log-list-{{ doc.id }}"
+                class="logs-list--data {% if doc.id == targetWebUpdateID %}selected{% endif %}"
+                onclick="changeCard('{{doc.id}}')"
+                {% if doc.id == targetWebUpdateID %}active-change-log{% endif %}>
+
+              <p class="label--01 text-05 margin--0 margin-bottom--2">
+                {{ doc.pub_date|utc_to_datetime_obj|date:"j M Y" }}
+              </p>
+
+              <p class="body--short-02 text-01 margin--0">
+                {{ doc.title }}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="webchange-container">
+      {% for doc in docs %}
+        <div id="wu-detail-{{ doc.id }}"
+             class="row-info-container {% if doc.id != targetWebUpdateID %}hideCardDetail{% endif %}"
+                {% if doc.id == targetWebUpdateID %} active-card-detail {% endif %}>
+
+          <div class="web-container--info-block">
+            <p class="label--01 text-05 margin--0 margin-bottom--2">
+              {{ doc.pub_date|utc_to_datetime_obj|date:"j M Y" }}
+            </p>
+
+            <p class="productive--heading-02 text-01 margin--0 margin-bottom--4">
+              {{ doc.title }}
+            </p>
+
+            <p class="body--long-01 text-01 margin--0">
+              {{ doc.body }}
+              <a class="bx--link" href="{{ doc.web_source_web_url }}" target="_blank">
+                Visit page
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M18 6L16.57 7.393 24.15 15 4 15 4 17 24.15 17 16.57 24.573 18 26 28 16 18 6z"></path><title>Arrow right</title></svg>
+              </a>
+            </p>
+
+            <div class="height-32"></div>
+            <div class="tag-block">
+              {% for bid, tags in doc.tags.items %}
+                {% for tag in tags %}
+                  <span class="bx--tag">{{ tag.name }}</span>
+                {% endfor %}
+              {% endfor %}
+
+              <!--
+              <span class="bx--tag">Cyber Security</span>
+              <span class="bx--tag">New Offerings</span>
+              -->
+            </div>
+          </div>
+
+          <div class="img-diff-container">
+            <div class="pixelcompare" data-pixelcompare data-useNaturalWidth data-useNaturalHeight>
+              {% if isDummy or DEBUG %}
+                <img class="beforeImg" src="http://112233.contify.com/{{ doc.new_image }}" width="100%" alt="Current" onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                <img class="afterImg" src="http://112233.contify.com/{{ doc.old_image }}" width="100%" alt="Previous" />
+              {% else %}
+                <img class="beforeImg" src="{{ MEDIA_URL }}{{ doc.new_image }}" width="100%" alt="Current" onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                <img class="afterImg" src="{{ MEDIA_URL }}{{ doc.old_image }}" width="100%" alt="Previous" />
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let initActiveWebUpdateID = "{{ targetWebUpdateID }}";
+
+  function addClass(targetEle, className) {
+    let newClassNames = [];
+    let classNames = targetEle.className.split(" ");
+
+    for (let i in classNames) {
+      let cn = classNames[i];
+      cn = cn.trim();
+      if (cn.length > 0) {
+        newClassNames.push(cn);
+      }
+    }
+    // classNames = classNames.filter(item => item.trim());
+
+    if (newClassNames.indexOf(className) === -1) {
+      newClassNames.push(className);
+    }
+    targetEle.className = newClassNames.join(" ")
+  }
+
+  function removeClass(targetEle, className) {
+    // targetEle.className = targetEle.className.replace(/\bclassName\b/g, "");
+    let newClassNames = [];
+    let classNames = targetEle.className.split(" ");
+
+    for (let i in classNames) {
+      let cn = classNames[i];
+      cn = cn.trim();
+      if (cn.length > 0) {
+        newClassNames.push(cn);
+      }
+    }
+    // classNames = classNames.filter(item => item.trim());
+
+    let ri = newClassNames.indexOf(className);
+    if (ri !== -1) {
+      newClassNames.splice(ri, 1);
+    }
+    targetEle.className = newClassNames.join(" ")
+  }
+
+  function changeCard(docID) {
+    let oldActiveCardContainers = document.querySelectorAll("[active-card-detail]");
+    oldActiveCardContainers.forEach(function (activeCard) {
+      addClass(activeCard, "hideCardDetail");
+      activeCard.removeAttribute("active-card-detail");
+    });
+
+    let newActiveCard = document.getElementById("wu-detail-" + docID);
+    removeClass(newActiveCard, "hideCardDetail");
+    newActiveCard.setAttribute("active-card-detail", '');
+
+    let controlContainers = newActiveCard.querySelectorAll(
+            ".control-container"
+    );
+    controlContainers.forEach(function(cC) {
+      let setSliderPos = cC.querySelectorAll(".setCustomSliderPos");
+      setSliderPos.forEach(function (sP) {
+        sP.click();
+      });
+    });
+
+    let oldActiveLogContainers = document.querySelectorAll("[active-change-log]");
+    oldActiveLogContainers.forEach(function (activeLog) {
+      removeClass(activeLog, "selected");
+      activeLog.removeAttribute("active-change-log");
+    });
+
+    let newActiveLog = document.getElementById("log-list-" + docID);
+    addClass(newActiveLog, "selected");
+    newActiveLog.setAttribute("active-change-log", '');
+  }
+
+  function onBeforeImgLoad(ele, docID) {
+    console.log("Loaed Before Image docID: ", docID);
+    if (docID == initActiveWebUpdateID) {
+      changeCard(docID);
+    }
+
+    /*
+    let newActiveCard = document.getElementById("wu-detail-" + docID);
+    // removeClass(newActiveCard, "hideCardDetail");
+    // newActiveCard.setAttribute("active-card-detail", '');
+
+    let controlContainers = newActiveCard.querySelectorAll(
+      ".control-container"
+    );
+
+    controlContainers.forEach(function(cC) {
+      let setSliderPos = cC.querySelectorAll(".setCustomSliderPos");
+      setSliderPos.forEach(function (sP) {
+        // if (docID == initActiveWebUpdateID) {
+        //  ele.setAttribute("src", ele.src);
+        //}
+
+        let hR = 600 / ele.height;
+        let offsetPer = Number(hR.toFixed(1));
+
+        sP.click(offsetPer);
+      });
+    });
+    */
+  }
+
+</script>
+<script src="{{ MEDIA_URL }}{{ WST_PATH }}/image_comparison/compare.js?v=0.1"></script>
+
+</body>
+
+</html>
+

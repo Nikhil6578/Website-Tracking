@@ -1,0 +1,337 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+	<!-- Place favicon.ico in the root directory -->
+	<!-- <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,200,300,300i,400,400i,500,500i,600,600i,700,700i&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
+
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ WST_PATH }}/preview-vender.min.css" />
+
+  <meta name="theme-color" content="#fafafa">
+  <style>
+		body{
+			background: #f4f4f4;
+			font-family: "IBM Plex Sans",arial,sans-serif;
+		}
+		.container-fluid {
+			max-width: 1440px;
+		}
+		.article-card {
+			width: 750px;
+			margin: 120px auto;
+			background-color: #fff;
+		}
+		.article-card-info {
+			padding: 16px;
+		}
+		.upper-panel .company-logo {
+			border: 1px solid #DCDCDC;
+			width: 48px;
+		}
+		.upper-panel .article-company-block {
+    	padding-top: 6px;
+		}
+		.upper-panel .company-name {
+			color: #161616;
+			font-size: 14px;
+			letter-spacing: .16px;
+			line-height: 18px;
+			margin-bottom: 2px;
+			font-weight: 500;
+		}
+		.upper-panel .publication-info {
+			margin-bottom: 0;
+		}
+		.label--01 {
+			font-size: 12px;
+			line-height: 16px;
+			font-weight: 400;
+			letter-spacing: 0.32px;
+		}
+		.text-05{
+			color: #6f6f6f;
+		}
+		.productive--heading-03 {
+			font-size: 20px;
+			line-height: 26px;
+			font-weight: 400;
+			letter-spacing: 0px;
+		}
+		.link-01{
+    	color: #0072C3;
+		}
+		.body--long-02 {
+			font-size: 16px;
+			line-height: 24px;
+			font-weight: 400;
+			letter-spacing: 0px;
+		}
+		.text-01{
+    	color: #161616;
+		}
+		.info-panel .article-heading{
+			margin-top: 16px;
+			margin-bottom: 12px;
+		}
+		.info-panel .article-description {
+			margin-bottom: 0;
+		}
+		.article-img {
+    	width: 100%;
+			margin-top: 16px;
+		}
+		.article-card--tabs {
+			padding: 0 16px;
+			border-bottom: 2px solid #F4F4F4;
+			margin-bottom: 16px;
+			height: 40px;
+		}
+		.article-card--tabs .tabs {
+			display: inline-block;
+			padding: 10px 16px;
+			cursor: pointer;
+			border-bottom: 2px solid #E0E0E0;
+			margin-right: 1px;
+			width: 176px;
+		}
+		.article-card--tabs .tabs:hover {
+    	border-bottom: 2px solid #C6C6C6;
+		}
+		.article-card--tabs .tabs.text-02.active {
+			color: #161616;
+			font-weight: 500;
+			border-bottom: 2px solid #0072C3;
+		}
+		.body--short-01 {
+			font-size: 14px;
+			font-weight: 400;
+			letter-spacing: .16px;
+			line-height: 18px;
+		}
+		.text-02 {
+    	color: #393939;
+		}
+		.article-tabs-display-block {
+    	padding: 0 16px 16px;
+		}
+  </style>
+
+  <style type="text/css">
+    /* Apply these styles only when #preview-pane has
+       been placed within the Jcrop widget */
+    .jcrop-holder #preview-pane {
+      display: block;
+      position: absolute;
+      z-index: 2000;
+      top: 10px;
+      right: -280px;
+      padding: 6px;
+      border: 1px rgba(0,0,0,.4) solid;
+      background-color: white;
+
+      -webkit-border-radius: 6px;
+      -moz-border-radius: 6px;
+      border-radius: 6px;
+
+      -webkit-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+      -moz-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+      box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* The Javascript code will set the aspect ratio of the crop
+       area based on the size of the thumbnail preview,
+       specified here */
+    #preview-pane .preview-container {
+      width: 283px;
+      height: 183px;
+      overflow: hidden;
+    }
+  </style>
+
+  <style type="text/css">
+    /* Apply these styles to the tags */
+
+    .form--text-area {
+      font-size: 14px;
+      background: 0 0;
+      margin-top: 0;
+      padding: 0 16px;
+    }
+    .e-tag-container {
+      border-radius: 4px;
+      height: 21px;
+      display: inline-block;
+      background: #fff;
+      border: 1px solid #dcdcdc;
+      padding: 0 3px 0 0;
+      margin-right: 10px;
+      margin-bottom: 16px;
+      margin-top: 0;
+      float: left;
+    }
+    .e-tag-container .bucket-icon-generated {
+      height: 19px!important;
+      padding: 5px;
+      margin-right: 4px;
+    }
+    span.bucket-icon-generated {
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      width: 18px;
+      height: auto;
+      text-align: center;
+      display: inline-block;
+      vertical-align: top;
+      opacity: .9;
+    }
+    .e-tag {
+      font-size: 12px;
+    }
+		.tabs-section .tags-container{
+			height: 100%;
+			display: inline-block;
+		}
+  </style>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="article-card">
+			<div class="article-card-info">
+				<div class="row upper-panel">
+					<div class="col-md-1">
+						<img class="company-logo" src="{{ DEFAULT_COMPANY_LOGO }}" alt="company-logo">
+					</div>
+					<div class="col-md-11 article-company-block">
+						<p class="company-name">{{ entityInfo.name|safe }}</p>
+						<p class="publication-info label--01 text-05">{{ contentSourceName|safe }}<span> &middot; {{ pubDate }}</span></p>
+					</div>
+				</div>
+				<div class="row info-panel">
+					<div class="col-md-7">
+						<p class="article-heading productive--heading-03 link-01">{{ title|safe }}</p>
+						<p class="article-description body--long-02 text-01">{{ summary|safe }}</p>
+					</div>
+
+          <div id="preview-pane" class="col-md-5">
+            <div class="preview-container">
+              <img class="article-img jcrop-preview" src="{{ snippetInfo.url | safe }}" alt="{{ snippetInfo.url | safe }}" style="{% for k,v in snippetInfo.css.items %}{{ k }}: {{ v }}; {% endfor %}"/>
+            </div>
+          </div>
+				</div>
+			</div>
+
+			<div class="tabs-section">
+				<div class="article-card--tabs">
+					<div id="tab-h-tag" class="tabs body--short-01 text-02 active">Tags</div>
+					<div id="tab-h-changelog" class="tabs body--short-01 text-02">Changelog</div>
+					<div id="tab-h-comment" class="tabs body--short-01 text-02">Comments</div>
+				</div>
+
+        <div id="tab-b-tag" class="form--text-area">
+          <span id="wst-tag-container" class="tags-container"></span>
+        </div>
+
+				<div id="tab-b-changelog" class="article-tabs-display-block" style="display: none;">
+					<div class="tabs-container">
+						Changelog goes here...
+					</div>
+				</div>
+
+        <div id="tab-b-comment"  class="article-tabs-display-block" style="display: none;">
+
+        </div>
+			</div>
+		</div>
+	</div>
+
+  <!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="{{ MEDIA_URL }}js/common/bucket_color.js"></script> -->
+
+  <script src="{{ MEDIA_URL }}{{ WST_PATH }}/preview.min.js"></script>
+
+  <script>
+    let tagsMap = {{ tagsMap|safe }};
+    let bucketMap = {{ bucketMap|safe }};
+
+    $(document).ready(function() {
+      showTags();
+      toggleTabsContainer();
+    });
+
+    function showTags() {
+      // Remove all the previous tags
+      $("#wst-tag-container").empty();
+
+      // Add the client tags
+      for (const [bID, tmpTagsMap] of Object.entries(tagsMap)) {
+        let bName = bucketMap[bID];
+        for (const [tID, tName] of Object.entries(tmpTagsMap)) {
+          addTag(bName, bID, tName, tID);
+        }
+      }
+    }
+
+    function addTag(bucketName, bucketID, tagName, tagID) {
+      let tagCont = $("#wst-tag-container");
+      let bgColor = window.contifyBucketColor.getHSLA(bucketName, bucketID);
+      let tagInitial = window.contifyBucketColor.bucketStr(bucketName);
+      let tgTitle = isNaN(bucketID)? bucketName: "customTag ("+ bucketName + ")";
+
+      let newEle = `
+      <span id="tag-`+ bucketID + tagID + `" class="e-tag-container" style="border-color: 1px solid #dfe3e6;;" data-toggle="tooltip" title="`+ tgTitle +`">
+        <span class="bucket-icon-generated" style="background-color:` + bgColor + `;">
+          ` + tagInitial + `
+        </span>
+
+        <span class="e-tag">
+          ` + tagName + `
+        </span>
+      </span>
+    `;
+
+      tagCont.append(newEle);
+    }
+
+    function toggleTabsContainer() {
+      let tabsIdSuffix = ["-tag", "-changelog", "-comment"];
+      for (let i = 0; i < tabsIdSuffix.length; ++i) {
+        let tabSID = tabsIdSuffix[i];
+        $("#tab-h" + tabSID).on("click", function(e) {
+          for (let j = 0; j < tabsIdSuffix.length; ++j) {
+            let tmpTSuffixID = tabsIdSuffix[j];
+            let tmpTabHEle = $("#tab-h" + tmpTSuffixID);
+            let tmpTabBEle = $("#tab-b" + tmpTSuffixID);
+
+            if (tmpTSuffixID === tabSID) {
+              tmpTabHEle.addClass("active");
+              tmpTabBEle.show();
+            } else {
+              tmpTabHEle.removeClass("active");
+              tmpTabBEle.hide();
+            }
+          }
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

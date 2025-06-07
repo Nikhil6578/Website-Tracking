@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fafafa">
+
+    <style>
+      html, body {
+        height: 100%;
+      }
+      body {
+        font-family: 'IBM Plex Sans',Helvetica Neue,Helvetica,sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        text-align: left;
+      }
+      button, input {
+        overflow: visible;
+      }
+      button, input, optgroup, select, textarea {
+        margin: 0;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+      }
+      button:disabled,
+      button[disabled]{
+        border: 1px solid #999999;
+        background-color: #cccccc;
+        color: #666666;
+        cursor: default;
+      }
+
+      .input-group {
+        padding: 0;
+      }
+      .space-20{
+        height: 20px;
+      }
+      .text-02 {
+        color: #393939;
+      }
+      .label--01 {
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 400;
+        letter-spacing: 0.32px;
+        margin-bottom: 8px;
+      }
+
+      .form--input:active, .form--input:focus {
+        outline: 2px solid #0072c3;
+        outline-offset: 0;
+        border: none;
+      }
+      .form--input {
+        font-size: 14px;
+        display: block;
+        width: 98%;
+        height: 40px;
+        padding: 0 16px;
+        color: #152935;
+        background-color: #fff;
+        box-shadow: 0 1px 0 0 #8c8c8c;
+        order: 2;
+        border: none;
+        border-bottom: 1px solid transparent;
+        border-radius: 0;
+      }
+
+      .primary-btn {
+        float: right;
+        min-width: 15%;
+        background-color: #0072c3;
+        color: #fff;
+        box-sizing: border-box;
+        border: 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 18px;
+        letter-spacing: .16px;
+        cursor: pointer;
+        vertical-align: top;
+        min-height: 48px;
+        padding: 11px 12px;
+        text-align: left;
+        text-decoration: none;
+        transition: all 70ms cubic-bezier(0,0,.38,.9);
+        outline: 0;
+        position: relative;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        text-transform: none;
+      }
+      .primary-btn:hover {
+        background-color: #00539a;
+      }
+
+      #form-container, #screenshot-container {
+        width: 80%;
+        padding: 2%;
+        margin-left: 10%;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      #screenshot-container, #raw-html-container {
+
+      }
+
+      .timeout-btn {
+        display: inline-flex;
+        width: 100%;
+      }
+      .in-time-out {
+        width: 100%;
+      }
+      #error-msg {
+        color: red;
+        font-weight: bold;
+      }
+
+      .iframe-container {
+        width: 100%;
+        height: 100%;
+      }
+
+      .check-box-cont {
+        display: inline-flex;
+        width: 100%;
+      }
+      .cb-bool {
+        width: 16%;
+      }
+
+      .refresh-btn {
+        background-color: transparent;
+        color: black;
+        border: 1px solid #393939;
+        margin-right: 1%;
+      }
+      .refresh-btn:hover {
+        background-color: #4c4c4c;
+        color: #fff;
+      }
+    </style>
+
+    <style>
+      .loader {
+        display: none;
+        position: absolute;
+        border: 2px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 2px solid #0072c3;
+        width: 20px;
+        height: 20px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+        padding: 11px;
+        margin-left: 6px;
+      }
+      @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+
+    <script>
+      function resetMessage() {
+        let errorMsgEle = document.getElementById("error-msg");
+        errorMsgEle.innerText = "";
+      }
+
+      function fetchWebURL(targetEle) {
+        let inWebUrlEle = document.getElementById("web-url");
+        let inTimeoutEle = document.getElementById("time-out");
+
+        let inHeadLessEle = document.getElementById("headLess");
+        let inDevToolsEle = document.getElementById("devTools");
+        let inUseOriginalHeightEle = document.getElementById("useOriginalHeight");
+        let inCloseBrowser = document.getElementById("closeBrowser");
+        let inGenScreenshot = document.getElementById("genScreenshot");
+        let inPatchBaseUrl = document.getElementById("patchBaseUrl");
+
+        let spinnerEle = document.getElementById("fetch-wu-loader");
+
+        if (inWebUrlEle.value < 1) {
+          return
+        }
+
+        let formData = new FormData();
+
+        formData.append("webUrl", inWebUrlEle.value);
+        formData.append("timeOut",  inTimeoutEle.valueAsNumber);
+
+        formData.append("headLess", Number(inHeadLessEle.checked));
+        formData.append("devTools", Number(inDevToolsEle.checked));
+        formData.append(
+                "useOriginalHeight", Number(inUseOriginalHeightEle.checked)
+        );
+        formData.append("closeBrowser", Number(inCloseBrowser.checked));
+        formData.append("genScreenshot", Number(inGenScreenshot.checked));
+        formData.append("patchBaseUrl", Number(inPatchBaseUrl.checked));
+
+        spinnerEle.style.display = "inline";
+
+        // Reset the previous fetched info
+        let htmlCont = document.getElementById("iframe-html");
+        let imgCont = document.getElementById("img-screenshot");
+
+        htmlCont.srcdoc = "";
+        imgCont.src = "";
+        targetEle.disabled = true;
+
+        fetch('/website-tracking/test-fetch-web-url/', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(response => {
+          if (!response.ok) {
+            let errorMsg = response.statusText;
+            if (response.status === 504) {
+              errorMsg = "Timeout error"
+            }
+            throw new Error(errorMsg);
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log('Success:', result);
+
+          if (result.hasOwnProperty("error")) {
+            let msgEle = document.getElementById("error-msg");
+            msgEle.innerText = result.error;
+          }
+          else {
+            let htmlCont = document.getElementById("iframe-html");
+            // htmlCont.style.display = "block";
+            htmlCont.srcdoc = result.html;
+
+            let imgCont = document.getElementById("img-screenshot");
+            // imgCont.style.display = "block";
+            imgCont.src = "data:image/jpg;base64," + result.screenshot;
+          }
+
+          spinnerEle.style.display = "none";
+          setTimeout(function(){ resetMessage() }, 8000);
+
+          targetEle.disabled = false;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+
+          let msgEle = document.getElementById("error-msg");
+          msgEle.innerText = error.message;
+
+          spinnerEle.style.display = "none";
+          setTimeout(function(){ resetMessage() }, 8000);
+
+          targetEle.disabled = false;
+        });
+      }
+
+    </script>
+  </head>
+
+  <body>
+    <div id="form-container" class="row">
+      <div id="btn-container">
+        <div class="space-20"></div>
+        <div class="space-20"></div>
+        <p class="label--01 text-02"></p>
+
+        <button type="button" id="fetch-web-url" class="primary-btn" onclick="fetchWebURL(this)">
+          Fetch
+        </button>
+
+        <div style="float: right;">
+          <span id="fetch-wu-loader" class="loader"></span>
+        </div>
+
+        <button type="button" id="" class="primary-btn refresh-btn" onClick="window.location.reload();">
+          Test New URL
+        </button>
+      </div>
+
+      <div class="space-20"></div>
+      <div id="input-container">
+        <div class="in-web-url input-group">
+          <div class="space-20"></div>
+          <p class="label--01 text-02">
+            Web URL
+          </p>
+          <input type="url" name="webUrl" id="web-url" class="form--input" placeholder="Enter a web URL to fetch the HTML and generate the screenshot">
+        </div>
+
+        <div class="timeout-btn">
+          <div class="in-time-out input-group">
+            <div class="space-20"></div>
+            <p class="label--01 text-02">
+              Timeout (millisecond)
+            </p>
+            <input type="number" name="timeOut" id="time-out" class="form--input" value="10000">
+          </div>
+        </div>
+
+        <div class="check-box-cont input-group" id="wst-check-box-options">
+          <div class="cb-bool">
+            <div class="space-20"></div>
+
+            <p class="label--01 text-02" for="" title="Generate the screenshot of rendered HTML">
+              Generate Screenshot
+            </p>
+
+            <input type="checkbox" id="genScreenshot" name="genScreenshot" checked>
+          </div>
+
+          <div class="cb-bool">
+            <div class="space-20"></div>
+            <p class="label--01 text-02" for="" title="If checked, use view port height same as the website height">
+              Original Height As View Port
+            </p>
+
+            <input type="checkbox" id="useOriginalHeight" name="useOriginalHeight">
+          </div>
+
+          <div class="cb-bool">
+            <div class="space-20"></div>
+            <p class="label--01 text-02" for="" title="If checked, use base-url in generating the html">
+              Use Base URL
+            </p>
+
+            <input type="checkbox" id="patchBaseUrl" name="patchBaseUrl" checked>
+          </div>
+
+          <div class="cb-bool">
+            <div class="space-20"></div>
+
+            <p class="label--01 text-02" for="" title="In production, it must be checked">
+              Headless
+            </p>
+
+            <input type="checkbox" id="headLess" name="headLess" checked {% if not DEBUG %} disabled {% endif %}>
+          </div>
+
+          <div class="cb-bool">
+            <div class="space-20"></div>
+
+            <p class="label--01 text-02" for="">
+              DevTools
+            </p>
+
+            <input type="checkbox" id="devTools" name="devTools" title="In production, it must be unchecked" {% if not DEBUG %} disabled {% endif %}>
+          </div>
+
+          <div class="cb-bool">
+            <div class="space-20"></div>
+
+            <p class="label--01 text-02" for="vehicle3" title="In production, it must be checked">
+              Close Browser
+            </p>
+
+            <input type="checkbox" id="closeBrowser" name="closeBrowser" checked {% if not DEBUG %} disabled {% endif %}>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="msg-container">
+        <label id="success-msg"></label>
+        <label id="error-msg"></label>
+      </div>
+    </div>
+
+    <div id="screenshot-container">
+      <img id="img-screenshot" scr="" width="100%" height="100%">
+    </div>
+
+    <div id="raw-html-container" class="iframe-container">
+      <iframe id="iframe-html" frameborder="0" scrolling="yes" style="height: 100%; width: 100%" height="100%" width="100%">
+
+      </iframe>
+    </div>
+  </body>
+</html>

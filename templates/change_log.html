@@ -1,0 +1,452 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+{% load cfytags %}
+
+<head>
+  <meta charset="utf-8">
+  <title>Contify - Market Intelligence Platform</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fafafa">
+  <link type="image/x-icon" rel="icon" href="{{ MEDIA_URL }}images/favicon.png?v=1.2">
+  <link rel="apple-touch-icon" href="{{ MEDIA_URL }}images/favicon.png?v=1.1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="author" content="Contify">
+  <meta property="fb:admins" content="594702886" />
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="contify.com">
+  <meta name="twitter:title" content="Contify">
+  <meta name="twitter:description" content="Contify is a Market Intelligence Platform that aggregates and curates insights from over 35,000 sources in real time to give you up to minute triggers on your prospects, customers, and their competitors and make it available when and where you need them the most">
+  <meta name="twitter:image:src" content="{{ MEDIA_URL }}images/Twitter-Card-Image.png?v=1">
+  <meta name="google-site-verification" content="XU5vCCQb2aPFk9Diuuw4gmVPKHUifYImzG1FbALJZ7w" />
+  <!-- Please remove these fonts once you connect this template with a postlogin apps -->
+  <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,200,300,300i,400,400i,500,500i,600,600i,700,700i&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Serif:100,200,300,400,400i,500,600,700&display=swap" rel="stylesheet">
+
+  <link href="{{ MEDIA_URL }}bootstrap-5.2.3/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}bootstrap-5.2.3/js/bootstrap.bundle.min.js"></script>
+
+  <link rel="stylesheet" href="{{ MEDIA_URL }}{{ WST_PATH }}/image_comparison/compare.css?v=0.2">
+  <link href="{{ MEDIA_URL }}{{ WST_PATH }}/change_log.css?v=2.9" rel="stylesheet" type="text/css">
+  <link type="text/css" rel="stylesheet" href="{{ MEDIA_URL }}css/style/dist/main.min.css?v=0.215">
+
+</head>
+
+<body>
+  <!--[if IE]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+  <![endif]-->
+
+  <div class="container website-tracker">
+    <div class="company-detail--container">
+      <div class="company-logo">
+        <img src="{{ publishedByCompany.logo }}" alt="">
+      </div>
+      <div class="web-tracking--info">
+        <h6 class="company-name margin-bottom--4">{{ publishedByCompany.name }}</h6>
+        <p class="body--short-01 text-07 text-01">Website Changes</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="changelog-container">
+        <div class="container-meta">
+          <span>
+            <span class="productive--heading-02 f_weight--500 text-01 margin--0">
+              Updates History
+            </span>
+            <span class="body--short-02 text-07 margin--0 margin-bottom--2">
+              ({{ numFound }} updates)
+            </span>
+          </span>
+        </div>
+
+        <div class="info-block">
+          <div class="carousel--container carousel slide" id="timeLogCarousel" >
+            <div id="log-list-container" class="logs-list carousel-inner">
+              {% for doc in docs %}
+                {% if forloop.counter0|divisibleby:4 %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="row gx-0">
+                {% endif %}
+                      <div class="col-3 time-log--container">
+                        <li id="log-list-{{ doc.id }}"
+                            class="logs-list--data {% if doc.id == targetWebUpdateID %}selected{% endif %}" {% if doc.id == targetWebUpdateID %}active-change-log{% endif %}
+                            onclick="changeCard('{{doc.id}}')">
+                          <p class="label--01 text-02 margin--0 margin-bottom--8">
+                            {{ doc.pub_date|utc_to_datetime_obj|date:"j M Y" }}
+                          </p>
+                          <p class="body--short-01 text-01 margin-left--24 margin-bottom--8">
+                            {{ doc.title }}
+                          </p>
+                        </li>
+                      </div>
+                {% if forloop.counter|divisibleby:4 or forloop.last %}
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#timeLogCarousel"
+                    data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" fill="#525252" width="16" height="16"
+                     viewBox="0 0 32 32" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path
+                        d="M10 16L20 6 21.4 7.4 12.8 16 21.4 24.6 20 26z"></path><title>Chevron left</title>
+                </svg>
+              </span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#timeLogCarousel"
+                    data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" fill="#525252" width="16" height="16"
+                     viewBox="0 0 32 32" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path
+                        d="M22 16L12 26 10.6 24.6 19.2 16 10.6 7.4 12 6z"></path><title>Chevron right</title>
+                </svg>
+              </span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="webchange-container margin-top--16">
+        {% for doc in docs %}
+          <div id="wu-detail-{{ doc.id }}"
+               class="row-info-container {% if doc.id != targetWebUpdateID %}hideCardDetail{% endif %}" {% if doc.id == targetWebUpdateID %}active-card-detail{% endif %} >
+            <div class="web-container--info-block">
+              <p class="label--01 text-02 margin--0 margin-bottom--8">
+                {{ doc.pub_date|utc_to_datetime_obj|date:"j M Y" }}
+              </p>
+
+              <p class="productive--heading-02 text-01 margin--0 margin-bottom--8">
+                {{ doc.title }}
+              </p>
+
+              <p class="body--long-01 text-07 margin--0">
+                {{ doc.body }}
+                <a class="bx--link text-decoration-underline" href="{{ doc.web_source_web_url }}" target="_blank">
+                  Visit page
+                </a>
+              </p>
+
+              <div class="tag-block margin-top--12 container--tags">
+                {% for bid, tags in doc.tags.items %}
+                  {% for tag in tags %}
+                  <div class="tag">
+                    <span class="tag-icon">{{ tag.bucket_name}}</span>
+                    <span class="tag-value">{{ tag.name }}</span>
+                  </div>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+            </div>
+            <div class="view-control--bar d-flex flex-row-reverse align-items-center" >
+              <div class="toggle-container d-flex align-items-center gap-2 margin-left--28">
+                <span class="body--short-01 text-02">Change View</span>
+                <label class="container-custom-btn toggle">
+                  <input class="change-view--toggle" type="checkbox" onclick="changeView()">
+                  <span class="toggle-switch"></span>
+                </label>
+              </div>
+              <div class="zoom--button flex-row-reverse zoom-button--container" >
+                <button class="reset-size-btn" onclick="resetSize()" data-bs-toggle="tooltip" data-bs-placement="top" title="Actual Size" class="reset-size--btn">
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="#525252" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" fill="#E8E8E8"/>
+                    <path d="M22.8808 10.6641H9.11671C8.90566 10.6641 8.73438 10.8347 8.73438 11.045V20.9498C8.73438 21.1601 8.90566 21.3307 9.11671 21.3307H22.8808C23.0918 21.3307 23.2631 21.1601 23.2631 20.9498V11.045C23.2631 10.8347 23.0918 10.6641 22.8808 10.6641ZM22.4984 20.5688H9.49905V11.426H22.4984V20.5688Z"
+                    />
+                    <path d="M10.648 14.4732C10.859 14.4732 11.0303 14.3025 11.0303 14.0923V12.9494H12.1773C12.3884 12.9494 12.5596 12.7787 12.5596 12.5685C12.5596 12.3582 12.3884 12.1875 12.1773 12.1875H10.648C10.4369 12.1875 10.2656 12.3582 10.2656 12.5685V14.0923C10.2656 14.3025 10.4369 14.4732 10.648 14.4732Z"
+                    />
+                    <path d="M10.648 19.8092H12.1773C12.3884 19.8092 12.5596 19.6385 12.5596 19.4282C12.5596 19.2179 12.3884 19.0472 12.1773 19.0472H11.0303V17.9044C11.0303 17.6941 10.859 17.5234 10.648 17.5234C10.4369 17.5234 10.2656 17.6941 10.2656 17.9044V19.4282C10.2656 19.6385 10.4369 19.8092 10.648 19.8092Z"
+                    />
+                    <path d="M19.8198 12.9494H20.9668V14.0923C20.9668 14.3025 21.1381 14.4732 21.3492 14.4732C21.5602 14.4732 21.7315 14.3025 21.7315 14.0923V12.5685C21.7315 12.3582 21.5602 12.1875 21.3492 12.1875H19.8198C19.6088 12.1875 19.4375 12.3582 19.4375 12.5685C19.4375 12.7787 19.6088 12.9494 19.8198 12.9494Z"
+                    />
+                    <path d="M19.8198 19.8092H21.3492C21.5602 19.8092 21.7315 19.6385 21.7315 19.4282V17.9044C21.7315 17.6941 21.5602 17.5234 21.3492 17.5234C21.1381 17.5234 20.9668 17.6941 20.9668 17.9044V19.0472H19.8198C19.6088 19.0472 19.4375 19.2179 19.4375 19.4282C19.4375 19.6385 19.6088 19.8092 19.8198 19.8092Z"
+                    />
+                  </svg>
+                </button>
+                <div class="zoom-counter--wrapper">
+                  <span class="body--short-01"> Zoom </span>
+                  <svg class="decrease-size--button" onclick="decreaseSize()" width="16" height="16" viewBox="0 0 16 16" fill="#C6C6C6" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_12568_8418)">
+                      <rect x="2.5" y="7.5" width="11" height="1"/>
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_12568_8418">
+                        <rect width="16" height="16" fill="white"/>
+                      </clipPath>
+                    </defs>
+                  </svg>
+                  <div class="zoom-counter--box">
+
+                  </div>
+                  <svg class="increase-size--button" onclick="increaseSize()" width="16" height="16" viewBox="0 0 16 16" fill="#161616" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_12568_8421)">
+                      <path d="M8.6875 7.3125V2.5H7.3125V7.3125H2.5V8.6875H7.3125V13.5H8.6875V8.6875H13.5V7.3125H8.6875Z"
+                            />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_12568_8421">
+                        <rect width="16" height="16" fill="white"/>
+                      </clipPath>
+                    </defs>
+                  </svg>
+
+                </div>
+              </div>
+            </div>
+            <div class="img-diff-container">
+              <div class="pixelcompare" data-pixelcompare data-vertical data-useNaturalHeight data-hover>
+                {% if isDummy or DEBUG %}
+                  <img class="beforeImg" src="http://112233.contify.com/{{ doc.new_image }}" width="100%" alt="Current" onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                  <img class="afterImg" src="http://112233.contify.com/{{ doc.old_image }}" width="100%" alt="Previous" />
+                {% else %}
+                  <img class="beforeImg" src="{{ MEDIA_URL }}{{ doc.new_image }}" width="100%" alt="Current" onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                  <img class="afterImg" src="{{ MEDIA_URL }}{{ doc.old_image }}" width="100%" alt="Previous" />
+                {% endif %}
+              </div>
+            </div>
+            <div class="zoom-image--container">
+              <div class="vertical-view--container">
+                {% if isDummy or DEBUG %}
+                <div class="image-current--tag" >
+                  Current
+                </div>
+                <img src="http://112233.contify.com/{{ doc.new_image }}" width="49.5%" alt="Current"
+                     onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                <div class="image-prev--tag">
+                  Previous
+                </div>
+                <img  src="http://112233.contify.com/{{ doc.old_image }}" width="49.5%" alt="Previous"/>
+                {% else %}
+                <div class="image-current--tag" >
+                  Current
+                </div>
+                <img src="{{ MEDIA_URL }}{{ doc.new_image }}" width="49.5%" alt="Current"
+                     onload="onBeforeImgLoad(this, '{{ doc.id }}')"/>
+                <div class="image-prev--tag">
+                  Previous
+                </div>
+                <img src="{{ MEDIA_URL }}{{ doc.old_image }}" width="49.5%" alt="Previous"/>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let initActiveWebUpdateID = "{{ targetWebUpdateID }}";
+    let changeViewButton = document.querySelectorAll('.change-view--toggle');
+    let zoomButton = document.querySelectorAll('.zoom--button');
+    let increaseSizeBtn = document.querySelectorAll('.increase-size--button');
+    let decreaseSizeBtn = document.querySelectorAll('.decrease-size--button');
+    let singleViewDisplay = document.querySelectorAll('.img-diff-container');
+    let doubleViewDisplay = document.querySelectorAll('.vertical-view--container');
+    let zoomValueText = document.querySelectorAll('.zoom-counter--box');
+    let zoomScale = 1;
+    let isAnyToggleBtnChecked = false;
+
+    zoomValueText.forEach(element => element.innerText = '0%');
+
+    /*/
+    Function is for triggering bootstraps tooltips on whole page
+     */
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    /*/
+    Function for disabling carousel loop cycle
+     */
+    let timeLogCarousel = new bootstrap.Carousel('#timeLogCarousel', {
+      wrap: false
+    });
+    
+    function resetSize() {
+      zoomValueText.forEach(element => element.innerText = '0%');
+      zoomScale = 1;
+      doubleViewDisplay.forEach(element => element.style.transform = `scale(${zoomScale})`);
+      decreaseSizeBtn.forEach(element => {
+            element.style.fill = '#C6C6C6';
+            element.style.cursor = 'not-allowed';
+      });
+      increaseSizeBtn.forEach(element => {
+          element.style.cursor = 'pointer';
+          element.style.fill = '#161616';
+      })
+      document.querySelectorAll('.reset-size-btn').forEach(element => element.blur());
+    }
+
+    function increaseSize(){
+      if(zoomScale < 6){
+        decreaseSizeBtn.forEach(element => {
+          element.style.cursor = 'pointer';
+          element.style.fill = '#161616';
+        })
+        zoomScale += 0.5;
+        doubleViewDisplay.forEach(element => element.style.transform = `scale(${zoomScale})`);
+        zoomValueText.forEach(element => element.innerText = parseInt(element.innerText) + 10 + '%');
+        if (zoomScale === 6) {
+          increaseSizeBtn.forEach(element => {
+            element.style.fill = '#C6C6C6';
+            element.style.cursor = 'not-allowed';
+          });
+        }
+      }
+    }
+    function decreaseSize(){
+      if (zoomScale > 1) {
+        increaseSizeBtn.forEach(element => {
+          element.style.cursor = 'pointer';
+          element.style.fill = '#161616';
+        })
+        zoomScale -=0.5;
+        doubleViewDisplay.forEach(element => element.style.transform = `scale(${zoomScale})`);
+        zoomValueText.forEach(element => element.innerText = parseInt(element.innerText) - 10 + '%');
+        if (zoomScale === 1) {
+          decreaseSizeBtn.forEach(element => {
+            element.style.fill = '#C6C6C6';
+            element.style.cursor = 'not-allowed';
+          });
+        }
+      }
+    }
+    function changeView(){
+      isAnyToggleBtnChecked = !isAnyToggleBtnChecked               // This is used for tracking any toggle button clicks and updating all toggle buttons state according to it.
+      if(Array.from(changeViewButton).some(btn => btn.checked === true) && isAnyToggleBtnChecked) {
+        singleViewDisplay.forEach(element => element.style.display = 'block');
+        doubleViewDisplay.forEach(element => element.style.display = 'none');
+        zoomButton.forEach(element => element.style.display = 'none');
+        changeViewButton.forEach(element => {
+          element.checked = element.value = true;
+        })
+      }
+      else {
+        changeViewButton.forEach(element => {
+          element.checked = element.value = false;
+        })
+        singleViewDisplay.forEach(element => element.style.display ='none');
+        doubleViewDisplay.forEach(element => element.style.display = 'flex');
+        zoomButton.forEach(element => element.style.display = 'flex');
+      }
+      resetSize()
+    }
+
+    function addClass(targetEle, className) {
+      let newClassNames = [];
+      let classNames = targetEle.className.split(" ");
+
+      for (let i in classNames) {
+        let cn = classNames[i];
+        cn = cn.trim();
+        if (cn.length > 0) {
+          newClassNames.push(cn);
+        }
+      }
+      // classNames = classNames.filter(item => item.trim());
+
+      if (newClassNames.indexOf(className) === -1) {
+        newClassNames.push(className);
+      }
+      targetEle.className = newClassNames.join(" ")
+    }
+
+    function removeClass(targetEle, className) {
+      // targetEle.className = targetEle.className.replace(/\bclassName\b/g, "");
+      let newClassNames = [];
+      let classNames = targetEle.className.split(" ");
+
+      for (let i in classNames) {
+        let cn = classNames[i];
+        cn = cn.trim();
+        if (cn.length > 0) {
+          newClassNames.push(cn);
+        }
+      }
+      // classNames = classNames.filter(item => item.trim());
+
+      let ri = newClassNames.indexOf(className);
+      if (ri !== -1) {
+        newClassNames.splice(ri, 1);
+      }
+      targetEle.className = newClassNames.join(" ")
+    }
+
+    function changeCard(docID) {
+      let oldActiveCardContainers = document.querySelectorAll("[active-card-detail]");
+      oldActiveCardContainers.forEach(function (activeCard) {
+        addClass(activeCard, "hideCardDetail");
+        activeCard.removeAttribute("active-card-detail");
+      });
+
+      let newActiveCard = document.getElementById("wu-detail-" + docID);
+      removeClass(newActiveCard, "hideCardDetail");
+      newActiveCard.setAttribute("active-card-detail", '');
+
+      let controlContainers = newActiveCard.querySelectorAll(
+        ".control-container"
+      );
+      controlContainers.forEach(function(cC) {
+        let setSliderPos = cC.querySelectorAll(".setCustomSliderPos");
+        setSliderPos.forEach(function (sP) {
+          sP.click();
+        });
+      });
+
+      let oldActiveLogContainers = document.querySelectorAll("[active-change-log]");
+      oldActiveLogContainers.forEach(function (activeLog) {
+        removeClass(activeLog, "selected");
+        activeLog.removeAttribute("active-change-log");
+      });
+
+      let newActiveLog = document.getElementById("log-list-" + docID);
+      addClass(newActiveLog, "selected");
+      newActiveLog.setAttribute("active-change-log", '');
+    }
+
+    function onBeforeImgLoad(ele, docID) {
+      console.log("Loaed Before Image docID: ", docID);
+      if (docID == initActiveWebUpdateID) {
+        changeCard(docID);
+      }
+
+      /*
+      let newActiveCard = document.getElementById("wu-detail-" + docID);
+      // removeClass(newActiveCard, "hideCardDetail");
+      // newActiveCard.setAttribute("active-card-detail", '');
+
+      let controlContainers = newActiveCard.querySelectorAll(
+        ".control-container"
+      );
+
+      controlContainers.forEach(function(cC) {
+        let setSliderPos = cC.querySelectorAll(".setCustomSliderPos");
+        setSliderPos.forEach(function (sP) {
+          // if (docID == initActiveWebUpdateID) {
+          //  ele.setAttribute("src", ele.src);
+          //}
+
+          let hR = 600 / ele.height;
+          let offsetPer = Number(hR.toFixed(1));
+
+          sP.click(offsetPer);
+        });
+      });
+      */
+    }
+
+  </script>
+  <script src="{{ MEDIA_URL }}{{ WST_PATH }}/image_comparison/compare.js?v=0.2"></script>
+
+</body>
+
+</html>

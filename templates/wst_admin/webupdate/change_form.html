@@ -1,0 +1,536 @@
+
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+
+{% block extrahead %}
+  {{ block.super }}
+
+  <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+  {{ media }}
+
+  <script src="{{ MEDIA_URL }}website-tracking/tapmodo-Jcrop/js/jquery.Jcrop.js"></script>
+
+  <script type="text/javascript">
+    let $ = django.jQuery;
+
+    let oldScreenshotURL = "{{ oldImageUrl|safe }}";
+    let newScreenshotURL = "{{ newImageUrl|safe }}";
+    let screenshotInfo = {{ previewSnippetInfo|safe }};
+
+    $(document).ready(function() {
+      onclickExpandCompressScreenshots();
+
+      updateTextareaHeight("id_title");
+      updateTextareaHeight("id_description", 20);
+
+      onChangeTitleText();
+      onChangeDescriptionText();
+
+      setInitSnippetInfo();
+    });
+
+    function setInitSnippetInfo() {
+      $("#previewSnippetInfo").attr("value", JSON.stringify(screenshotInfo));
+    }
+
+    function onChangeTitleText() {
+      $("#id_title").on("change input", function() {
+        updateTextareaHeight("id_title");
+      });
+    }
+
+    function onChangeDescriptionText() {
+      $("#id_description").on("change input", function() {
+        updateTextareaHeight("id_description", 20);
+      });
+    }
+
+    function updateTextareaHeight(eleID, offset=0) {
+      let $itemEle = $("#" + eleID);
+      let itemTextLength = $itemEle.val().length;
+
+      if (itemTextLength > 0) {
+        let multiplier = Math.ceil(itemTextLength / 95);
+        let height = ((multiplier * 18) + offset).toString() + 'px';
+        $itemEle.css("height", height);
+      }
+    }
+
+    function onclickExpandCompressScreenshots() {
+      let jcrop_old_api, jcrop_new_api;
+
+      let previewXSize = 283;  // Preview width size in px
+      let previewYSize = 183;  // Preview height size in pz
+
+      // Use below options to the jcorp to make the hardcoded selection area
+      // allowResize: false,
+      // setSelect: [140, 180, 160, 180],
+      // minSize: [180, 180],
+      // maxSize: [180, 250]
+
+      function updatePreviewCSS(c, containerName) {
+        if (parseInt(c.w) > 0) {
+          let rx = previewXSize / c.w;
+          let ry = previewYSize / c.h;
+
+          let jCorpAPI;
+          let $previewHEle = $("#previewSnippetInfo");
+
+          if (containerName === "new") {
+            jCorpAPI = jcrop_new_api;
+            screenshotInfo.url = newScreenshotURL;
+          } else {
+            jCorpAPI = jcrop_old_api;
+            screenshotInfo.url = oldScreenshotURL;
+          }
+
+          // Use the API to get the real image size
+          let bounds = jCorpAPI.getBounds();
+          let boundX = bounds[0];
+          let boundY = bounds[1];
+
+          screenshotInfo.css = {
+            "width": Math.round(rx * boundX) + 'px',
+            "height": Math.round(ry * boundY) + 'px',
+            "margin-left": '-' + Math.round(rx * c.x) + 'px',
+            "margin-top": '-' + Math.round(ry * c.y) + 'px'
+          };
+
+          // Updating the preview css and URl
+          let $pimg = $("#preview-article-img");
+          $pimg.css(screenshotInfo.css);
+          $pimg.attr('src', screenshotInfo.url);
+
+          $previewHEle.attr('value', JSON.stringify(screenshotInfo));
+        }
+        else {
+          console.log("Preview not selected");
+        }
+      }
+
+      function compressScreenshotDisplay(containerName) {
+        let sCompressEle = $("#"+ containerName +"-screen-compress");
+
+        sCompressEle.on("click", function(event) {
+          sCompressEle.toggle();
+          $("#"+ containerName +"-screen-expand").toggle();
+
+          let oldSCELe = $("#old-screenshot-container");
+          let newSCELe = $("#new-screenshot-container");
+
+          oldSCELe.show();
+          oldSCELe.removeClass("col-md-12");
+          oldSCELe.addClass("col-md-6");
+
+          newSCELe.show();
+          newSCELe.removeClass("col-md-12");
+          newSCELe.addClass("col-md-6");
+
+          $(".jcrop-holder").hide();
+
+          let SSContainerEle = $("#"+ containerName +"-screenshot");
+          SSContainerEle.removeAttr("style");
+          SSContainerEle.css("width", "100%");
+
+          if (containerName === "old") {
+            jcrop_old_api.release();
+          } else {
+            jcrop_new_api.release();
+          }
+
+        });
+      }
+
+      function expandScreenshotDisplay(containerName) {
+        let sExpandEle = $("#"+ containerName +"-screen-expand");
+        sExpandEle.click(function() {
+          $("#"+ containerName +"-screen-compress").toggle();
+          sExpandEle.toggle();
+
+          let oppoSCName = containerName === 'old'? 'new': 'old';
+          $("#"+ oppoSCName +"-screenshot-container").toggle();
+
+          let oldSCEle = $("#old-screenshot-container");
+          let newSCEle = $("#new-screenshot-container");
+
+          oldSCEle.removeClass("col-md-6");
+          newSCEle.removeClass("col-md-6");
+
+          oldSCEle.addClass("col-md-12");
+          newSCEle.addClass("col-md-12");
+
+          let SSContainerEle = $("#"+ containerName +"-screenshot");
+          SSContainerEle.Jcrop({
+            onSelect: function(c) {
+              updatePreviewCSS(c, containerName);
+            }
+          }, function() {
+            if (containerName === "old") {
+              jcrop_old_api = this;
+            } else {
+              jcrop_new_api = this;
+            }
+          });
+
+          $(".jcrop-holder").show();
+          SSContainerEle.hide();
+        });
+      }
+
+      compressScreenshotDisplay("old");
+      compressScreenshotDisplay("new");
+      expandScreenshotDisplay("old");
+      expandScreenshotDisplay("new");
+    }
+
+  </script>
+
+{% endblock %}
+
+
+{% block extrastyle %}
+  {{ block.super }}
+
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+
+  <style>
+    body {
+      font-family: 'IBM Plex Sans',Helvetica Neue,Helvetica,sans-serif;
+      background: #f4f4f4;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    .section-container {
+      margin: 30px 0 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    p.instructions {
+      font-family: serif;
+      font-style: italic;
+      color: #666;
+      line-height: 130%;
+    }
+    .row {
+      display: flex;
+      margin-right: -15px;
+      margin-left: -15px;
+    }
+    .screenshot-container {
+      position: relative;
+    }
+    .diff-img-container {
+      padding: 1%;
+      padding-left: 0;
+    }
+    .diff-img-header {
+      font-size: 1.25rem;
+      margin-bottom: .5rem;
+      font-family: inherit;
+      line-height: 1.2;
+      color: inherit;
+      margin-top: 0;
+      box-sizing: border-box;
+
+      display: block;
+      margin-inline-start: 0;
+      margin-inline-end: 0;
+      letter-spacing: 0;
+      text-transform: initial;
+    }
+
+
+    /* Apply these styles only when #preview-pane has been placed within the Jcrop widget */
+    .jcrop-holder #preview-pane {
+      display: block;
+      position: absolute;
+      z-index: 2000;
+      top: 10px;
+      right: -280px;
+      padding: 6px;
+      border: 1px rgba(0,0,0,.4) solid;
+      background-color: white;
+
+      -webkit-border-radius: 6px;
+      -moz-border-radius: 6px;
+      border-radius: 6px;
+
+      -webkit-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+      -moz-box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+      box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* The Javascript code will set the aspect ratio of the crop
+       area based on the size of the thumbnail preview,
+       specified here */
+    #preview-pane .preview-container {
+      width: 283px;
+      height: 183px;
+      overflow: hidden;
+      border: 1px solid #c6c6c6;
+    }
+  </style>
+{% endblock %}
+
+
+{% block coltype %}
+  colM
+{% endblock %}
+
+
+{% block bodyclass %}
+  {{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form
+{% endblock %}
+
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <div class="breadcrumbs">
+      <a href="{% url 'admin:index' %}">
+        {% trans 'Home' %}
+      </a>
+      &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">
+          {{ opts.app_config.verbose_name }}
+        </a>
+      &rsaquo; {% if has_view_permission %}
+          <a href="{% url opts|admin_urlname:'changelist' %}">
+            {{ opts.verbose_name_plural|capfirst }}
+          </a>
+        {% else %}
+          {{ opts.verbose_name_plural|capfirst }}
+        {% endif %}
+      &rsaquo; {% if add %}
+          {% blocktrans with name=opts.verbose_name %}
+            Add {{ name }}
+          {% endblocktrans %}
+        {% else %}
+          {{ original|truncatewords:"18" }}
+        {% endif %}
+    </div>
+  {% endblock %}
+{% endif %}
+
+
+{% block content %}
+  <div id="content-main" class="container-fluid1">
+    {% block object-tools %}
+      {% if change %}
+        {% if not is_popup %}
+          <ul class="object-tools">
+            {% if original.manual_copy_of_id %}
+              <li>
+                <a href="/{{ WST_PATH }}/admin/{{ app_label }}/{{ opts.model_name }}/{{ original.manual_copy_of_id|safe }}" class="classification" target="_blank">
+                  {% trans "Copied From" %}
+                </a>
+              </li>
+            {% endif %}
+
+            <li>
+              <a href="/{{ WST_PATH }}/admin/{{ app_label }}/{{ opts.model_name }}/add?copy_wu_id={{ original.id|safe }}" class="createcopy" target="_blank">
+                {% trans "Create Copy" %}
+              </a>
+            </li>
+
+            {% block object-tools-items %}
+              {% change_form_object_tools %}
+            {% endblock %}
+          </ul>
+        {% endif %}
+      {% endif %}
+    {% endblock %}
+
+    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>
+      {% csrf_token %}
+      {% block form_top %}
+
+      {% endblock %}
+
+      <div>
+        {% if is_popup %}
+          <input type="hidden" name="{{ is_popup_var }}" value="1">
+        {% endif %}
+
+        {% if to_field %}
+          <input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">
+        {% endif %}
+
+        {% if save_on_top %}
+          {% block submit_buttons_top %}
+            {% submit_row %}
+          {% endblock %}
+        {% endif %}
+
+        {% if errors %}
+          <p class="errornote">
+            {% if errors|length == 1 %}
+              {% trans "Please correct the error below." %}
+            {% else %}
+              {% trans "Please correct the errors below." %}
+            {% endif %}
+          </p>
+          {{ adminform.form.non_field_errors }}
+        {% endif %}
+
+        {% block field_sets %}
+          {% for fieldset in adminform %}
+            {% include "admin/includes/fieldset.html" %}
+          {% endfor %}
+        {% endblock %}
+
+        {% block after_field_sets %}
+          <fieldset class="module aligned ">
+            <h2>Preview Image</h2>
+            <div class="form-row field-_preview_image">
+              <div>
+                <div class="readonly">
+                  <div id="preview-main-container">
+                    <div id="preview-pane">
+                      <div class="preview-container">
+                        <img id="preview-article-img" class="article-img jcrop-preview" src="{{ previewSnippetInfo.url|safe }}" style="{% for k,v in previewSnippetInfo.css.items %}{{ k }}: {{ v }}; {% endfor %}">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        {% endblock %}
+
+        {% block inline_field_sets %}
+          {% for inline_admin_formset in inline_admin_formsets %}
+            {% include inline_admin_formset.opts.template %}
+          {% endfor %}
+        {% endblock %}
+
+        {% block after_related_objects %}
+
+        {% endblock %}
+
+        {% block submit_buttons_bottom %}
+          {% submit_row %}
+        {% endblock %}
+
+        {% block admin_change_form_document_ready %}
+          <script type="text/javascript"
+                  id="django-admin-form-add-constants"
+                  src="{% static 'admin/js/change_form.js' %}"
+                  {% if adminform and add %}
+                  data-model-name="{{ opts.model_name }}"
+                  {% endif %}>
+          </script>
+        {% endblock %}
+
+        {# JavaScript for prepopulated fields #}
+        {% prepopulated_fields_js %}
+
+      </div>
+
+      <div class="section-container">
+        <input type="text" id="previewSnippetInfo" name="previewSnippetInfo" style="visibility: hidden; height: 0px; width: 0px;">
+
+{#        {% if not add %}#}
+          <div class="diff-other-links" style="display: flex;">
+            <p class="instructions">
+              Click and drag on the image to select an area.
+            </p>
+
+            {% if diffContentID %}
+              <span style="margin-left: auto;margin-right: 0;">
+                  <span class="diff-raw-svg">
+                    <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/raw-html" target="_blank" class="a-svg-link" title="Raw HTML">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8.531 18h-.76v-1.411H6.515V18h-.767v-3.373h.767v1.296h1.257v-1.296h.76V18zm3-2.732h-.921V18h-.766v-2.732h-.905v-.641h2.592v.641zM14.818 18l-.05-1.291c-.017-.405-.03-.896-.03-1.387h-.016c-.104.431-.245.911-.375 1.307l-.41 1.316h-.597l-.359-1.307a15.154 15.154 0 0 1-.306-1.316h-.011c-.021.456-.034.976-.059 1.396L12.545 18h-.705l.216-3.373h1.015l.331 1.126c.104.391.21.811.284 1.206h.017c.095-.391.209-.836.32-1.211l.359-1.121h.996L15.563 18h-.745zm3.434 0h-2.108v-3.373h.767v2.732h1.342V18z" fill="#626262"/>
+                      </svg>
+                    </a>
+                  </span>
+
+                  <span class="diff-raw-svg">
+                    <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/raw-screenshot/" target="_blank" class="a-svg-link" title="Raw Screenshot">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 36 36">
+                        <path d="M32.12 10H3.88A1.88 1.88 0 0 0 2 11.88v18.24A1.88 1.88 0 0 0 3.88 32h28.24A1.88 1.88 0 0 0 34 30.12V11.88A1.88 1.88 0 0 0 32.12 10zM32 30H4V12h28z" class="clr-i-outline clr-i-outline-path-1" fill="#626262"/><path d="M8.56 19.45a3 3 0 1 0-3-3a3 3 0 0 0 3 3zm0-4.6A1.6 1.6 0 1 1 7 16.45a1.6 1.6 0 0 1 1.56-1.6z" class="clr-i-outline clr-i-outline-path-2" fill="#626262"/>
+                        <path d="M7.9 28l6-6l3.18 3.18L14.26 28h2l7.46-7.46L30 26.77v-2L24.2 19a.71.71 0 0 0-1 0l-5.16 5.16l-3.67-3.66a.71.71 0 0 0-1 0L5.92 28z" class="clr-i-outline clr-i-outline-path-3" fill="#626262"/><path d="M30.14 3a1 1 0 0 0-1-1h-22a1 1 0 0 0-1 1v1h24z" class="clr-i-outline clr-i-outline-path-4" fill="#626262"/><path d="M32.12 7a1 1 0 0 0-1-1h-26a1 1 0 0 0-1 1v1h28z" class="clr-i-outline clr-i-outline-path-5" fill="#626262"/>
+                      </svg>
+                    </a>
+                  </span>
+
+                  <span class="diff-raw-svg">
+                    <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/diff-html" target="_blank" class="a-svg-link" title="Diff HTML">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                        <path d="M16.02 16.945l-.529 1.64h-.788l1.317-4.107V7.945h7.344l-1.397 15.39l-5.947 1.602zM16 32C7.163 32 0 24.837 0 16S7.163 0 16 0s16 7.163 16 16s-7.163 16-16 16zm-7.364-7.531L15.98 26.5l7.384-2.031L25 6.5H7zm5.163-6.793l-3.526-1.432v-.592l3.526-1.433v.742l-2.469.99l2.47.984zm7.933-1.432v-.592l-3.527-1.433v.742l2.47.987l-2.47.987v.741zm-5.712.7l1.1-3.413h-.796l-.304.947z" fill-rule="evenodd" fill="#626262"/>
+                      </svg>
+                    </a>
+                  </span>
+
+                  <span class="diff-raw-svg">
+                    <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/diff-screenshot/" target="_blank" class="a-svg-link" title="Diff Screenshot">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 36 36">
+                        <path d="M30.14 3a1 1 0 0 0-1-1h-22a1 1 0 0 0-1 1v1h24z" class="clr-i-solid clr-i-solid-path-1" fill="#626262"/><path d="M32.12 7a1 1 0 0 0-1-1h-26a1 1 0 0 0-1 1v1h28z" class="clr-i-solid clr-i-solid-path-2" fill="#626262"/><path d="M32.12 10H3.88A1.88 1.88 0 0 0 2 11.88v18.24A1.88 1.88 0 0 0 3.88 32h28.24A1.88 1.88 0 0 0 34 30.12V11.88A1.88 1.88 0 0 0 32.12 10zM8.56 13.45a3 3 0 1 1-3 3a3 3 0 0 1 3-3zM30 28H6l7.46-7.47a.71.71 0 0 1 1 0l3.68 3.68L23.21 19a.71.71 0 0 1 1 0L30 24.79z" class="clr-i-solid clr-i-solid-path-3" fill="#626262"/>
+                      </svg>
+                    </a>
+                  </span>
+                </span>
+            {% endif %}
+
+          </div>
+
+          <div class="row">
+          <div id="old-screenshot-container" class="diff-img-container col-md-6">
+            <div style="display:flex">
+              <h5 class="diff-img-header">
+                Old Screenshot
+              </h5>
+
+              <span style="margin-left: auto; margin-right: 0;">
+                  <i id="old-screen-compress" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+
+                  <i id="old-screen-expand">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+                </span>
+            </div>
+
+            <hr>
+
+            <img src="{{ oldImageUrl|safe }}" id="old-screenshot" alt="" style="width:100%;">
+          </div>
+
+          <div id="new-screenshot-container" class="diff-img-container col-md-6 screenshot-container">
+            <div style="display:flex">
+              <h5 class="diff-img-header">
+                New Screenshot
+              </h5>
+
+              <span style="margin-left: auto; margin-right: 0;">
+                  <i id="new-screen-compress" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+
+                  <i id="new-screen-expand">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+                </span>
+            </div>
+
+            <hr>
+
+            <img src="{{ newImageUrl|safe }}" id="new-screenshot" alt="" style="width:100%;">
+          </div>
+        </div>
+{#        {% endif %}#}
+      </div>
+
+
+    </form>
+  </div>
+{% endblock %}

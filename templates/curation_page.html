@@ -1,0 +1,1036 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Curation Page</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <!-- Place favicon.ico in the root directory -->
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}tapmodo-Jcrop/css/jquery.Jcrop.css" /> -->
+  <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,200,300,300i,400,400i,500,500i,600,600i,700,700i&amp;display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}{{ WST_PATH }}/curation-vender.min.css" />
+
+  <meta name="theme-color" content="#fafafa">
+
+  <link href="{{ MEDIA_URL }}css/website_tracking/style.css?v=0.1" rel="stylesheet" type="text/css" />
+
+  <!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="{{ MEDIA_URL }}tapmodo-Jcrop/js/jquery.Jcrop.js"></script>
+  <script src="{{ MEDIA_URL }}js/common/bucket_color.js"></script> -->
+
+
+  <script src="{{ MEDIA_URL }}{{ WST_PATH }}/curation.min.js"></script>
+  <script src="{{ MEDIA_URL }}js/vendors/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+  <script>
+    let urlPrefix = "/{{ WST_PATH }}";
+
+    let webUpdateID = "{{ WebUpdateID|safe }}" ? Number("{{ WebUpdateID|safe }}"): null;
+    let diffContentID = "{{ diffContentID|safe }}" ? Number("{{ diffContentID|safe }}"): null;
+    let oldScreenshotURL = "{{ oldDiffScreenshotUrl|safe }}";
+    let newScreenshotURL = "{{ newDiffScreenshotUrl|safe }}";
+    let previewScreenshotInfo = {{ snippetInfo|safe }};
+
+    let initialPubDate = "{{ pubDate|date:"Y-m-d" }}";
+
+    let tagsMap = {{ tagsMap|safe }};
+    let clientMap = {{ clientMap|safe }};
+    let bucketMap = {{ bucketMap|safe }};
+
+    let cloneTagsMap =  JSON.parse(JSON.stringify(tagsMap));
+
+    let selectedClientID = Object.keys(clientMap)[0] ;
+
+    let spinnerEle = $("#spinner-loader");
+
+    $(document).ready(function() {
+      // $('#pubDate').val(new Date().toDateInputValue());
+
+      makeCatCompleteWidget();
+      linkAutoComplete();
+      showClientTags();
+      onClientChange();
+
+      if (newScreenshotURL && oldScreenshotURL) {
+        onclickExpandCompressScreenshots();
+      }
+
+      validateFormData();
+
+      onClickClose();
+      onClickSave();
+      onClickSaveAndContinue();
+      onClickPreview();
+
+      onImgUploadInputChange();
+      onImgUploadButtonChange();
+
+      if ($("[name='single_client_id']").data("client-id") === 82) {
+        $('#makeCopyForSI').prop('checked', false);
+        $("#copy-si-label").hide();
+      }
+
+    });
+
+    function makeCatCompleteWidget() {
+      $.widget('custom.catcomplete', $.ui.autocomplete, {
+        _create: function () {
+          this._super();
+          this.widget().menu('option', 'items', '> :not(.ui-autocomplete-category)');
+        },
+        _renderMenu: function (ul, items) {
+          let that = this;
+          let currentCategory = '';
+          $.each(items, function (index, item) {
+            var li;
+            if (item.category != currentCategory) {
+              ul.append('<li class="ui-autocomplete-category">' + item.category + '</li>');
+              currentCategory = item.category;
+            }
+            li = that._renderItemData(ul, item);
+            if (item.category) {
+              li.attr('aria-label', item.category + ' : ' + item.label);
+            }
+            if (item.url) {
+              li.append('<p class="dropdown-company-url">' + ' ' + item.url + '</p>');
+            }
+            if (item.position || item.personCompany) {
+              li.append('</br>');
+              if (item.position) {
+                li.append('<span class="dropdown-item-url' +
+                        ' dropdown-ppl-posi">' + ' ' + item.position + '</span>');
+              }
+              if (item.personCompany && item.position)
+                li.append('<span class="posi-at-comp">' + ' at ' + '</span>');
+              if (item.personCompany) {
+                li.append('<span class="dropdown-item-url' +
+                        ' dropdown-ppl-comp">' + ' ' + item.personCompany + '</span>');
+              }
+            }
+          });
+        }
+      });
+    }
+
+    function linkAutoComplete() {
+      let uiAcOpts = {
+        minLength: 1,
+        source: resolveDataSource,
+        select: onSelect,
+      };
+
+      let element = $("#autocomplete");
+
+      element.catcomplete(uiAcOpts);
+      element.on('keypress', function(e) {
+        if (e.which === 13) {
+          element.catcomplete('close');
+        }
+      });
+
+      function resolveDataSource(request, response) {
+        let suggestions = [];
+        let params = {
+          q: request.term,
+          all_tags: 1,
+        };
+
+        $.ajax({
+          url: "/penseive/buckets/all/tags/suggest/",
+          type: "get",
+          dataType: "json",
+          data: params,  // JSON.stringify({"storyId": rootStoryId}),
+
+          success: function (result) {
+            // let suggestions = [];
+            $.map(result, function (item) {
+              suggestions.push({
+                originalItem: item,
+                value: item.name,
+                category: item.bucket_name,
+                url: item.url,
+                personCompany: item.company,
+                position: item.position
+              });
+
+            });
+            response(suggestions);
+          },
+
+          error: function (result) {
+            console.log("Got Error while fetching the autocomplete results");
+          }
+        });
+        // return response(suggestions);
+      }
+
+      function onSelect(event, ui) {
+        element.val("");
+        let tmpItem = ui.item.originalItem;
+
+        let tmpTagsMap = cloneTagsMap[selectedClientID];
+        if (!tmpTagsMap.hasOwnProperty(tmpItem.bucket_id)) {
+          tmpTagsMap[tmpItem.bucket_id] = {}
+        }
+        tmpTagsMap[tmpItem.bucket_id][tmpItem.id] = tmpItem.name;
+
+        addTag(tmpItem.bucket_name, tmpItem.bucket_id, tmpItem.name, tmpItem.id);
+        // todo: add this item in added list
+        return false;
+      }
+
+    }
+
+    function addTag(bucketName, bucketID, tagName, tagID) {
+      let tagCont = $("#wst-tag-container");
+      let bgColor = window.contifyBucketColor.getHSLA(bucketName, bucketID);
+      let tagInitial = window.contifyBucketColor.bucketStr(bucketName);
+      let tgTitle = isNaN(bucketID)? bucketName: "customTag ("+ bucketName + ")";
+
+      let newEle = `
+        <span id="tag-`+ bucketID + tagID + `" class="e-tag-container" style="border-color: 1px solid #dfe3e6;;" data-toggle="tooltip" title="`+ tgTitle +`">
+          <span class="bucket-icon-generated" style="background-color:` + bgColor + `;">
+            ` + tagInitial + `
+          </span>
+
+          <span class="e-tag">
+            ` + tagName + `
+          </span>
+
+          <span class="remove remove-tag" onclick="removeTag(this)" data-bucketID=`+ bucketID +` data-tagID=`+ tagID +`>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.93em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 1216 1312">
+              <path d="M1202 1066q0 40-28 68l-136 136q-28 28-68 28t-68-28L608 976l-294 294q-28 28-68 28t-68-28L42 1134q-28-28-28-68t28-68l294-294L42 410q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294l294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68L880 704l294 294q28 28 28 68z" fill="#626262"/>
+            </svg>
+          </span>
+        </span>
+      `;
+
+      tagCont.append(newEle);
+    }
+
+    function removeTag(thisEle) {
+      let bucketID = $(thisEle).attr("data-bucketID");
+      let tagID = $(thisEle).attr("data-tagID");
+      $(`#tag-`+ bucketID + tagID).remove();
+
+      delete cloneTagsMap[selectedClientID][bucketID][tagID];
+    }
+
+    function showClientTags(clientID) {
+      if (selectedClientID === clientID) {
+        return;
+      }
+
+      if (!clientID) { // this is the case for first time.
+        clientID = selectedClientID;
+      }
+
+      // Remove all the previous tags
+      $("#wst-tag-container").empty();
+
+      // Add the client tags
+      if (cloneTagsMap.hasOwnProperty(clientID)) {
+        for (const [bID, tmpTagsMap] of Object.entries(cloneTagsMap[clientID])) {
+          let bName = bucketMap[bID];
+          for (const [tID, tName] of Object.entries(tmpTagsMap)) {
+            addTag(bName, bID, tName, tID);
+          }
+        }
+      }
+    }
+
+    function onClientChange() {
+      $("#client-id").change(function() {
+        let tmpClientID = Number($("#client-id").val());
+        showClientTags(tmpClientID);
+        selectedClientID = tmpClientID;
+        if (tmpClientID === 82) {
+          $('#makeCopyForSI').prop('checked', false);
+          $("#copy-si-label").hide();
+        }
+        else {
+          $('#makeCopyForSI').prop('checked', true);
+          $("#copy-si-label").show();
+        }
+      });
+    }
+
+    function onImgUploadInputChange() {
+      $(".img-upload-input").change(function(e) {
+        let fileName = e.target.files[0].name;
+        let nextSibling = e.target.nextElementSibling;
+        nextSibling.innerText = fileName
+      });
+    }
+
+    function onclickExpandCompressScreenshots() {
+      let jcrop_old_api, jcrop_new_api;
+
+      let previewXSize = 283;  // Preview width size in px
+      let previewYSize = 183;  // Preview height size in pz
+
+      // Use below options to the jcorp to make the hardcoded selection area
+      // allowResize: false,
+      // setSelect: [140, 180, 160, 180],
+      // minSize: [180, 180],
+      // maxSize: [180, 250]
+
+      function updatePreviewCSS(c, containerName) {
+        if (parseInt(c.w) > 0) {
+          let rx = previewXSize / c.w;
+          let ry = previewYSize / c.h;
+
+          let jCorpAPI;
+
+          if (containerName === "new") {
+            jCorpAPI = jcrop_new_api;
+            previewScreenshotInfo.url = newScreenshotURL;
+          } else {
+            jCorpAPI = jcrop_old_api;
+            previewScreenshotInfo.url = oldScreenshotURL;
+          }
+
+          // Use the API to get the real image size
+          let bounds = jCorpAPI.getBounds();
+          let boundX = bounds[0];
+          let boundY = bounds[1];
+
+          previewScreenshotInfo.css = {
+            "width": Math.round(rx * boundX) + 'px',
+            "height": Math.round(ry * boundY) + 'px',
+            "margin-left": '-' + Math.round(rx * c.x) + 'px',
+            "margin-top": '-' + Math.round(ry * c.y) + 'px'
+          };
+
+          // Updating the preview css and URl
+          let $pimg = $("#preview-article-img");
+          $pimg.css(previewScreenshotInfo.css);
+          $pimg.attr('src', previewScreenshotInfo.url);
+        }
+        else {
+          console.log("Preview not selected");
+        }
+      }
+
+      function compressScreenshotDisplay(containerName) {
+        let sCompressEle = $("#"+ containerName +"-screen-compress");
+
+        sCompressEle.on("click", function(event) {
+          sCompressEle.toggle();
+          $("#"+ containerName +"-screen-expand").toggle();
+
+          let oldSCELe = $("#old-screenshot-container");
+          let newSCELe = $("#new-screenshot-container");
+
+          oldSCELe.show();
+          oldSCELe.removeClass("col-md-12");
+          oldSCELe.addClass("col-md-6");
+
+          newSCELe.show();
+          newSCELe.removeClass("col-md-12");
+          newSCELe.addClass("col-md-6");
+
+          $(".jcrop-holder").hide();
+
+          let SSContainerEle = $("#"+ containerName +"-screenshot");
+          SSContainerEle.removeAttr("style");
+          SSContainerEle.css("width", "100%");
+
+          if (containerName === "old") {
+            jcrop_old_api.release();
+          } else {
+            jcrop_new_api.release();
+          }
+
+        });
+      }
+
+      function expandScreenshotDisplay(containerName) {
+        let sExpandEle = $("#"+ containerName +"-screen-expand");
+        sExpandEle.click(function() {
+          $("#"+ containerName +"-screen-compress").toggle();
+          sExpandEle.toggle();
+
+          let oppoSCName = containerName === 'old'? 'new': 'old';
+          $("#"+ oppoSCName +"-screenshot-container").toggle();
+
+          let oldSCEle = $("#old-screenshot-container");
+          let newSCEle = $("#new-screenshot-container");
+
+          oldSCEle.removeClass("col-md-6");
+          newSCEle.removeClass("col-md-6");
+
+          oldSCEle.addClass("col-md-12");
+          newSCEle.addClass("col-md-12");
+
+          let SSContainerEle = $("#"+ containerName +"-screenshot");
+          SSContainerEle.Jcrop({
+            onSelect: function(c) {
+              updatePreviewCSS(c, containerName);
+            }
+          }, function() {
+            if (containerName === "old") {
+              jcrop_old_api = this;
+            } else {
+              jcrop_new_api = this;
+            }
+          });
+
+          $(".jcrop-holder").show();
+          SSContainerEle.hide();
+        });
+      }
+
+      compressScreenshotDisplay("old");
+      compressScreenshotDisplay("new");
+      expandScreenshotDisplay("old");
+      expandScreenshotDisplay("new");
+    }
+
+    function getCxt(isPreview) {
+      let tmpTagsMap = cloneTagsMap[selectedClientID];
+
+      let cxt = {
+        "title": $("#title").val().trim(),
+        "summary": $("#summary").val().trim(),
+        "pubDate": $("#pubDate").val().trim(),
+        "snippetInfo": previewScreenshotInfo,
+        "tagsMap": tmpTagsMap,
+        "clientID": selectedClientID,
+        "makeCopyForSI": $("#makeCopyForSI").is(':checked')
+      };
+
+      if (diffContentID) {
+        cxt["diffContentID"] = diffContentID;
+      }
+
+      if (webUpdateID) {
+        cxt["webUpdateID"] = webUpdateID;
+      }
+
+      if (isPreview) {
+        let entityInfo = {};
+
+        if (tmpTagsMap.hasOwnProperty("published_by_company")) {
+          entityInfo.name = Object.values(tmpTagsMap.published_by_company)[0]
+        }
+        else if(tmpTagsMap.hasOwnProperty("company")) {
+          entityInfo.name = Object.values(tmpTagsMap.company)[0]
+        }
+        else if(tmpTagsMap.hasOwnProperty("combined_company")) {
+          entityInfo.name = Object.values(tmpTagsMap.combined_company)[0]
+        }
+
+        cxt["entityInfo"] = entityInfo;
+        cxt["contentSourceName"] = Object.values(tmpTagsMap.content_source)[0];
+        cxt["clientName"] = clientMap[selectedClientID];
+        cxt["bucketMap"] = bucketMap;
+      }
+      console.log(cxt);
+      return cxt // $.param(params)
+    }
+
+    function validateFormData() {
+      $.validator.addMethod("publishedByCompany", function(value, element) {
+          let tmpTagsMap = cloneTagsMap[selectedClientID];
+          if (!tmpTagsMap.hasOwnProperty("published_by_company") ||
+                  $.isEmptyObject(tmpTagsMap.published_by_company)) {
+            return true;
+          }
+          return Object.keys(tmpTagsMap.published_by_company).length === 1;
+        }, "PublishedBYCompany can't be more than one"
+      );
+
+      $.validator.addMethod("LanguageTag", function(value, element) {
+          let tmpTagsMap = cloneTagsMap[selectedClientID];
+          if (!tmpTagsMap.hasOwnProperty("language") ||
+                  $.isEmptyObject(tmpTagsMap.language)) {
+            return true;
+          }
+          return Object.keys(tmpTagsMap.language).length === 1;
+        }, "Language can't be more than one"
+      );
+
+      $.validator.addMethod("contentSource", function(value, element) {
+          let tmpTagsMap = cloneTagsMap[selectedClientID];
+          if (!tmpTagsMap.hasOwnProperty("content_source") ||
+                  $.isEmptyObject(tmpTagsMap.content_source)) {
+            return false;
+          }
+          return Object.keys(tmpTagsMap.content_source).length === 1;
+        }, "ContentSource is required and can't be more than one"
+      );
+
+      $.validator.addMethod("previewCss", function(value, element) {
+          return !newScreenshotURL || !$.isEmptyObject(previewScreenshotInfo);
+        }, "You need to crop either old or new diff screenshot"
+      );
+
+      $("#wst-curation-form").validate({
+        debug: true,
+        rules: {
+          title : {
+            required: true
+          },
+          pubDate: {
+            required: true,
+            // pattern: true
+          },
+          summary: {
+            required: true
+          },
+          tagErrorInput: {
+            publishedByCompany: true,
+            contentSource: true,
+            LanguageTag: true
+          },
+          previewScreenshot: {
+            previewCss: true
+          }
+        },
+        messages : {
+          title: {
+            required: "Title is required field"
+          },
+          pubDate: {
+            required: "PubDate is required field",
+            // pattern: "Invalid date is selected"
+          },
+          summary: {
+            required: "summary is required field"
+          },
+          tagErrorInput: {
+            publishedByCompany: "PublishedBYCompany can't be more than one",
+            contentSource: "ContentSource is required and can't be more than one",
+            LanguageTag: "Language can't be more than one"
+          },
+          previewScreenshot: {
+            previewCss: "You need to crop either old or new diff screenshot to create a web-update"
+          }
+        },
+        submitHandler: function(form) {
+          form.submit();
+        }
+      });
+    }
+
+    function onClickPreview() {
+      $("#preview-btn").on("click", function(e) {
+        let isValidForm = $("#wst-curation-form").valid();
+        if (!isValidForm) {
+          return false;
+        }
+        let url = urlPrefix + "/preview-card/?cxt=" + JSON.stringify(getCxt(true));
+        let link = document.createElement("a");
+        link.href = url;
+        link.style = "visibility:hidden";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+
+    function onClickClose() {
+      $("#close-btn").on("click", function(){
+        window.close();
+      });
+    }
+
+    function onClickSave() {
+      $("#save-btn").on("click", function(){
+        let isValidForm = $("#wst-curation-form").valid();
+        if (!isValidForm) {
+          return false;
+        }
+
+        let params = getCxt();
+
+        $("#spinner-loader").show();
+
+        $.ajax({
+          url: urlPrefix + "/create-or-update-web-update/",
+          type: "post",
+          dataType: "json",
+          data: {"postData": JSON.stringify(params)},
+
+          success: function (result) {
+            console.log(result);
+            let msgEle = $("#msg-container");
+            msgEle.html(result.msg);
+            webUpdateID = result.webUpdateID;
+            // window.close();
+          },
+
+          error: function (result) {
+            console.log("Got Error creating or updating the WebUpdate");
+            let msgEle = $("#msg-container");
+            msgEle.html(`
+              <span class='error-msg'>
+                <label class='msg-title'>
+                  Got Error in 'creating OR updating' the WebUpdate
+                </label>
+              </span>`
+            );
+          },
+
+          complete: function (jqXHR, textStatus) {
+            $("#spinner-loader").hide();
+          }
+        });
+      });
+    }
+
+    function onClickSaveAndContinue() {
+      $("#save-n-continue-btn").on("click", function(){
+        let isValidForm = $("#wst-curation-form").valid();
+        if (!isValidForm) {
+          return false;
+        }
+
+        let params = getCxt();
+
+        $("#spinner-loader").show();
+
+        $.ajax({
+          url: urlPrefix + "/create-or-update-web-update/",
+          type: "post",
+          dataType: "json",
+          data: {"postData": JSON.stringify(params)},
+
+          success: function (result) {
+            console.log(result);
+            let msgEle = $("#msg-container");
+            msgEle.html(result.msg);
+            webUpdateID = result.webUpdateID;
+          },
+
+          error: function (result) {
+            console.log("Got Error creating or updating the WebUpdate");
+            let msgEle = $("#msg-container");
+            msgEle.html(`
+              <span class='error-msg'>
+                <label class='msg-title'>
+                  Got Error in updating the WebUpdate
+                </label>
+              </span>`
+            );
+          },
+
+          complete: function (jqXHR, textStatus) {
+            $("#spinner-loader").hide();
+          }
+        });
+      });
+    }
+
+    function onImgUploadButtonChange() {
+      $(".img-upload-btn").on("click", function(e) {
+        let uploadCont = e.target.dataset.imguploadcontainer;
+        if (["new", "old"].indexOf(uploadCont) === -1) {
+          console.log(uploadCont + "Image upload container is not supported");
+          return
+        }
+
+        let imgFile = $("#" + uploadCont +"-img-upload-input").prop('files');
+
+        if (webUpdateID && imgFile.length > 0) {
+          let formData = new FormData();
+          formData.append("webUpdateID", webUpdateID);
+          formData.append("imgBlob",  imgFile[0]);
+          formData.append("fieldName", uploadCont + "_image");
+
+          $("#spinner-loader").show();
+
+          $.ajax({
+            url: urlPrefix + "/web-update-upload-img",
+            type: "post",
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            enctype: 'multipart/form-data',
+
+            success: function(result) {
+              console.log(result);
+              let msgEle = $("#msg-container");
+              msgEle.html(result.msg);
+
+              // webUpdateID = result.webUpdateID;
+              if (uploadCont === "new") {
+                newScreenshotURL = result.imgURL;
+              } else {
+                oldScreenshotURL = result.imgURL;
+              }
+
+              $("#" + uploadCont + "-screenshot").attr('src', result.imgURL);
+            },
+
+            error: function (result) {
+              console.log("Got Error in uploading the image");
+              let msgEle = $("#msg-container");
+              msgEle.html(`
+              <span class='error-msg'>
+                <label class='msg-title'>
+                  Got Error in uploading the image
+                </label>
+              </span>`
+              );
+            },
+
+            complete: function (jqXHR, textStatus) {
+              $("#spinner-loader").hide();
+            }
+          });
+        }
+      });
+    }
+
+  </script>
+
+</head>
+
+<body class="curation--page">
+  <div id="spinner-loader"></div>
+
+  <div class="container-fluid">
+    <form name="curation-form" id="wst-curation-form" novalidate="novalidate">
+      <div class="section-container">
+        <img class="company-logo" src="{{ MEDIA_URL }}images/contify-logo-roundel.svg" alt="Contify - Market and Competitive Intelligence Platform">
+        <div class="header-container" style="display: flex;">
+          <h3 class="productive--heading-04">New website changes detected</h3>
+          <span id="msg-container"></span>
+        </div>
+
+        <div class="buttons-nav">
+          <button type="button" id="save-btn" class="custom-btn btn--primary btn--width-160 btn-left--margin-16">Save</button>
+          <button type="button" id="save-n-continue-btn" class="custom-btn btn--primary btn--width-160 btn-left--margin-16" style="display: none;">Save and continue</button>
+          <button type="button" id="preview-btn" class="custom-btn btn--tertiary-02 btn--width-160 btn-left--margin-16">Preview</button>
+          <button type="button" id="close-btn" class="custom-btn btn--tertiary-02 btn--width-160">Close</button>
+          <a style="display: none;" target="_blank" id="preview-a-tag"></a>
+        </div>
+      </div>
+
+		  <div class="section-container input--wrapper">
+
+			  <div class="row">
+
+				  <div class="col-md-6 container-scroll">
+
+						<div class="row">
+              <div class='col-md-6'>
+
+                <p class="label--01 text-02" for="">
+                  Client
+                </p>
+
+                {% if clientMap.keys|length == 1 %}
+                  {% for clientID, clientName in clientMap.items %}
+                    <input type="text" data-client-id="{{ clientID }}" name="single_client_id" value="{{ clientName }}" disabled="disabled" class="form-input-field" >
+                  {% endfor %}
+
+                {% else %}
+                  <div class="form-select--container">
+                    <select name="clientID" id="client-id" class="form-select-input">
+                      {% for clientID, clientName in clientMap.items %}
+                        <option value={{ clientID }} class="client-opt">{{ clientName }}</option>
+                      {% endfor %}
+                    </select>
+                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" class="form-select__arrow" style="will-change: transform"><path d="M8 11L3 6 3.7 5.3 8 9.6 12.3 5.3 13 6z"></path></svg>
+                  </div>
+                {% endif %}
+                <div>
+                  <h6>
+                  <label id="copy-si-label">
+                    <input id="makeCopyForSI" type="checkbox" value="makeCopyForSI" checked>
+                    Make A Copy For Standard Platform.
+                  </label>
+                  </h6>
+                </div>
+              </div>
+
+              <div class='col-md-6'>
+                <p class="label--01 text-02" for="">
+                  Date
+                </p>
+
+                <input type="date" name="pubDate" id="pubDate" class="form--input" required value="{{ pubDate|date:"Y-m-d" }}">
+              </div>
+						</div>
+
+            <div>
+              <div class="space-20"></div>
+              <p class="label--01 text-02" for="">
+                Headline
+              </p>
+
+              <input type="text" name="title" id="title" class="form--input" required value="{{ title }}">
+            </div>
+
+            <div>
+              <div class="space-20"></div>
+              <p class="label--01 text-02" for="">
+                Summary
+              </p>
+
+              <textarea name="summary" id="summary" cols="15" rows="5" class="form--text-area" required>{{ summary }}</textarea>
+            </div>
+
+            <div>
+              <div class="space-20"></div>
+              <p class="label--01 text-02" for="">
+                Tags
+              </p>
+
+              <div class="e-display-tags-container form--text-area field-2">
+                <span id="wst-tag-container" class="e-bucket-container">
+                </span>
+
+                <span class="new-tags-input-box">
+                  <input type="text" id="autocomplete" name="newTagAutoCat" class="edit_content_tag_input" placeholder="Start typing to pull up tag suggestions." >
+                </span>
+
+                <input type="text" name="tagErrorInput" style="visibility: hidden; height: 0px; width: 0px;">
+              </div>
+            </div>
+
+            <div>
+              <div class="space-20"></div>
+              <p class="label--01 text-02" for="">
+                URL
+              </p>
+
+              <input type="text" value="{{ wsWebUrl }}" disabled="disabled" class="form-input-field">
+            </div>
+
+            <div id="preview-main-container">
+              <div class="space-20"></div>
+              <p class="label--01 text-02" for="">Preview Image</p>
+              <div id="preview-pane">
+                <div class="preview-container">
+                  <img id="preview-article-img" class="article-img jcrop-preview" src="{{ snippetInfo.url | safe }}" alt="{{ snippetInfo.url | safe }}" style="{% for k,v in snippetInfo.css.items %}{{ k }}: {{ v }}; {% endfor %}"/>
+                </div>
+              </div>
+            </div>
+
+				  </div>
+
+          <div class="col-md-6 container-scroll">
+            <h4 class="productive--heading-03">
+              Difference in Text
+            </h4>
+
+            <hr>
+
+            {% if not diffContentID and WebUpdateID%}
+              <h5 style="text-align: center">
+                This WebUpdate was created without any DiffContent
+              </h5>
+
+              <p style="text-align: center;">
+                <label for="By" style="font-weight: bold">By</label>
+                <span style="text-decoration: underline; color: blue;"> {{ WebUpdateCreatedBy }}</span>
+
+                <label for="On" style="font-weight: bold">On</label>
+                <span style="text-decoration: underline; color: blue;"> {{ webUpdateCreatedOn }}</span>
+              </p>
+
+            {% elif diffContentID and not addedDiffHtml and not removedDiffHtml %}
+              <h5>
+                This is the initial DiffContent for WebSource
+                <a href="{{ wsWebUrl }}" target="_blank">
+                  {{ wsWebUrl }}
+                </a>
+              </h5>
+
+            {% else %}
+              <h5 class="body--short-02">
+                Added
+              </h5>
+
+              <p class="text-green">
+                {% autoescape on %}
+                  {{ addedDiffHtml|safe }}
+                {% endautoescape %}
+              </p>
+
+              <h5 class="body--short-02">
+                Removed
+              </h5>
+
+              <p class="text-red">
+                {% autoescape on %}
+                  {{ removedDiffHtml|safe}}
+                {% endautoescape %}
+              </p>
+            {% endif %}
+          </div>
+			  </div>
+		  </div>
+
+      {% if newDiffScreenshotUrl and oldDiffScreenshotUrl %}
+        <div class="section-container">
+          <input type="text" name="previewScreenshot" style="visibility: hidden; height: 0px; width: 0px;">
+
+          {% if noDiffScreenshot %}
+            <p class="error-screenshot" style="color: mediumvioletred;font-weight: bold;font-style: oblique;">
+              There was some issue in generating the screenshot of the DiffHtml
+            </p>
+          {% endif %}
+
+          <div class="diff-other-links" style="display: flex;">
+            <p class="instructions">
+              Click and drag on the image to select an area.
+            </p>
+
+            {% if diffContentID %}
+              <span style="margin-left: auto;margin-right: 0;">
+                <span class="diff-raw-svg">
+                  <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/raw-html" target="_blank" class="a-svg-link" title="Raw HTML">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8.531 18h-.76v-1.411H6.515V18h-.767v-3.373h.767v1.296h1.257v-1.296h.76V18zm3-2.732h-.921V18h-.766v-2.732h-.905v-.641h2.592v.641zM14.818 18l-.05-1.291c-.017-.405-.03-.896-.03-1.387h-.016c-.104.431-.245.911-.375 1.307l-.41 1.316h-.597l-.359-1.307a15.154 15.154 0 0 1-.306-1.316h-.011c-.021.456-.034.976-.059 1.396L12.545 18h-.705l.216-3.373h1.015l.331 1.126c.104.391.21.811.284 1.206h.017c.095-.391.209-.836.32-1.211l.359-1.121h.996L15.563 18h-.745zm3.434 0h-2.108v-3.373h.767v2.732h1.342V18z" fill="#626262"/>
+                    </svg>
+                  </a>
+                </span>
+
+                <span class="diff-raw-svg">
+                  <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/raw-screenshot/" target="_blank" class="a-svg-link" title="Raw Screenshot">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 36 36">
+                      <path d="M32.12 10H3.88A1.88 1.88 0 0 0 2 11.88v18.24A1.88 1.88 0 0 0 3.88 32h28.24A1.88 1.88 0 0 0 34 30.12V11.88A1.88 1.88 0 0 0 32.12 10zM32 30H4V12h28z" class="clr-i-outline clr-i-outline-path-1" fill="#626262"/><path d="M8.56 19.45a3 3 0 1 0-3-3a3 3 0 0 0 3 3zm0-4.6A1.6 1.6 0 1 1 7 16.45a1.6 1.6 0 0 1 1.56-1.6z" class="clr-i-outline clr-i-outline-path-2" fill="#626262"/>
+                      <path d="M7.9 28l6-6l3.18 3.18L14.26 28h2l7.46-7.46L30 26.77v-2L24.2 19a.71.71 0 0 0-1 0l-5.16 5.16l-3.67-3.66a.71.71 0 0 0-1 0L5.92 28z" class="clr-i-outline clr-i-outline-path-3" fill="#626262"/><path d="M30.14 3a1 1 0 0 0-1-1h-22a1 1 0 0 0-1 1v1h24z" class="clr-i-outline clr-i-outline-path-4" fill="#626262"/><path d="M32.12 7a1 1 0 0 0-1-1h-26a1 1 0 0 0-1 1v1h28z" class="clr-i-outline clr-i-outline-path-5" fill="#626262"/>
+                    </svg>
+                  </a>
+                </span>
+
+                <span class="diff-raw-svg">
+                  <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/diff-html" target="_blank" class="a-svg-link" title="Diff HTML">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 32 32">
+                      <path d="M16.02 16.945l-.529 1.64h-.788l1.317-4.107V7.945h7.344l-1.397 15.39l-5.947 1.602zM16 32C7.163 32 0 24.837 0 16S7.163 0 16 0s16 7.163 16 16s-7.163 16-16 16zm-7.364-7.531L15.98 26.5l7.384-2.031L25 6.5H7zm5.163-6.793l-3.526-1.432v-.592l3.526-1.433v.742l-2.469.99l2.47.984zm7.933-1.432v-.592l-3.527-1.433v.742l2.47.987l-2.47.987v.741zm-5.712.7l1.1-3.413h-.796l-.304.947z" fill-rule="evenodd" fill="#626262"/>
+                    </svg>
+                  </a>
+                </span>
+
+                <span class="diff-raw-svg">
+                  <a href="/{{ WST_PATH }}/{{ diffContentID|safe }}/diff-screenshot/" target="_blank" class="a-svg-link" title="Diff Screenshot">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="2em" height="2em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 36 36">
+                      <path d="M30.14 3a1 1 0 0 0-1-1h-22a1 1 0 0 0-1 1v1h24z" class="clr-i-solid clr-i-solid-path-1" fill="#626262"/><path d="M32.12 7a1 1 0 0 0-1-1h-26a1 1 0 0 0-1 1v1h28z" class="clr-i-solid clr-i-solid-path-2" fill="#626262"/><path d="M32.12 10H3.88A1.88 1.88 0 0 0 2 11.88v18.24A1.88 1.88 0 0 0 3.88 32h28.24A1.88 1.88 0 0 0 34 30.12V11.88A1.88 1.88 0 0 0 32.12 10zM8.56 13.45a3 3 0 1 1-3 3a3 3 0 0 1 3-3zM30 28H6l7.46-7.47a.71.71 0 0 1 1 0l3.68 3.68L23.21 19a.71.71 0 0 1 1 0L30 24.79z" class="clr-i-solid clr-i-solid-path-3" fill="#626262"/>
+                    </svg>
+                  </a>
+                </span>
+              </span>
+            {% endif %}
+
+          </div>
+
+          <div class="row">
+
+            <div id="old-screenshot-container" class="col-md-6">
+
+              <div style="display:flex">
+                <h5>
+                  Old Screenshot
+                </h5>
+
+                {% if WebUpdateID %}
+                  <div class="container-py-3" id="old-img-upload-container">
+                    <span class="input-group">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input img-upload-input" id="old-img-upload-input" aria-describedby="old-img-upload-input">
+                        <label class="custom-file-label" for="old-img-upload-input">Choose file</label>
+                      </div>
+
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary img-upload-btn" type="button" id="old-img-upload-btn" data-imgUploadContainer="old">Upload</button>
+                      </div>
+                    </span>
+                  </div>
+                {% endif %}
+
+                <span style="margin-left: auto; margin-right: 0;">
+                  <i id="old-screen-compress" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+
+                  <i id="old-screen-expand">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+                </span>
+              </div>
+
+              <hr>
+
+              <img src="{{ oldDiffScreenshotUrl }}" id="old-screenshot" alt="" style="width:100%;">
+            </div>
+
+            <div id="new-screenshot-container" class="col-md-6 screenshot-container">
+
+              <div style="display:flex">
+                <h5>
+                  New Screenshot
+                </h5>
+
+                {% if WebUpdateID %}
+                  <div class="container-py-3" id="new-img-upload-container">
+                    <span class="input-group">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input img-upload-input" id="new-img-upload-input" aria-describedby="new-img-upload-input">
+                        <label class="custom-file-label" for="new-img-upload-input">Choose file</label>
+                      </div>
+
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary img-upload-btn" type="button" id="new-img-upload-btn" data-imgUploadContainer="new">Upload</button>
+                      </div>
+                    </span>
+                  </div>
+                {% endif %}
+
+                <span style="margin-left: auto; margin-right: 0;">
+                  <i id="new-screen-compress" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M436 192H312c-13.3 0-24-10.7-24-24V44c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v84h84c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm-276-24V44c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v84H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24zm0 300V344c0-13.3-10.7-24-24-24H12c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12zm192 0v-84h84c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H312c-13.3 0-24 10.7-24 24v124c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+
+                  <i id="new-screen-expand">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" width="0.88em" height="1em" style="-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); transform: rotate(360deg);" preserveAspectRatio="xMidYMid meet" viewBox="0 0 448 512">
+                      <path d="M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z" fill="#626262"/>
+                    </svg>
+                  </i>
+                </span>
+              </div>
+
+              <hr>
+
+              <img src="{{ newDiffScreenshotUrl }}" id="new-screenshot" alt="" style="width:100%;">
+            </div>
+
+          </div>
+
+        </div>
+
+      {% endif %}
+
+      <div class="space-20"></div>
+      <div class="space-20"></div>
+    </form>
+	</div>
+
+</body>
+</html>

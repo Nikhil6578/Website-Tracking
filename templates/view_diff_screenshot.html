@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Image Comparison</title>
+    <!-- Stylesheet link  -->
+    <link href="{{ MEDIA_URL }}css/website_tracking/style.css?v=0.1" rel="stylesheet" type="text/css" />
+
+    <script>
+      let diffContentID = '{{ diffContentID|safe }}';
+
+      function resetMessage() {
+        let errorMsgEle = document.getElementById("error-msg");
+        let successMsgEle = document.getElementById("success-msg");
+
+        errorMsgEle.innerText = "";
+        successMsgEle.innerText = "";
+      }
+
+      function uploadScreenshot(targetEle, conVal) {
+        let errorMsg = "Something went wrong while uploading the " + conVal + " screenshot";
+        let sucMsg = "Successfully uploaded " + conVal + " screenshot";
+
+        let inputEle = document.getElementById(conVal + '-img-upload-input');
+        let removeEle = document.getElementById(conVal + "-remove-file");
+        let spinnerEle = document.getElementById(conVal + '-upload-spinner');
+
+        let selectedFile = inputEle.files;
+        if (selectedFile.length < 1) {
+          return
+        }
+
+        let formData = new FormData();
+
+        formData.append("diffContentID", diffContentID);
+        formData.append("imgBlob",  selectedFile[0]);
+        formData.append("fieldName", conVal + "_diff_image");
+
+        spinnerEle.style.display = "block";
+
+        fetch('/website-tracking/diff-content-upload-img/', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Something');
+          }
+          return response.json();
+        })
+        .then(result => {
+          console.log('Success:', result);
+          let msgEleID = result.error ? "error-msg": "success-msg";
+          let msgEle = document.getElementById(msgEleID);
+
+          msgEle.innerText = result.error ? errorMsg: sucMsg;
+          if (!result.error && result.imgURL) {
+            let imgEle = document.getElementById(conVal + "-diff-screenshot");
+            imgEle.src = result.imgURL;
+          }
+
+          spinnerEle.style.display = "none";
+          removeSelectedFile(removeEle, conVal);
+          setTimeout(function(){ resetMessage() }, 8000);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          let msgEle = document.getElementById("error-msg");
+
+          msgEle.innerText = errorMsg;
+          spinnerEle.style.display = "none";
+          removeSelectedFile(removeEle, conVal);
+          setTimeout(function(){ resetMessage() }, 8000);
+        });
+
+      }
+
+      function selectImageFile(targetEle, contVal) {
+        let inputEle = document.getElementById(contVal + '-img-upload-input');
+        let selectedFile = inputEle.files;
+        if (selectedFile.length < 1) {
+          inputEle.click();
+        }
+      }
+
+      function enableUploadButton(targetEle, contVal) {
+        let buttonEle = document.getElementById(contVal + "-img-upload-btn");
+        let removeEle = document.getElementById(contVal + "-remove-file");
+        let chooseFileEle = document.getElementById(contVal + '-img-upload-initiator');
+
+        let selectedFile = targetEle.files;
+
+        if (selectedFile.length > 0) {
+          buttonEle.disabled = false;
+          removeEle.style.display = 'inline';
+          chooseFileEle.innerText = selectedFile[0].name;
+          chooseFileEle.style.cursor = 'none'
+        } else {
+          chooseFileEle.innerText = "Choose Image to update "+ contVal + " screenshot";
+          chooseFileEle.style.cursor = 'pointer'
+        }
+      }
+
+      function removeSelectedFile(targetEle, contVal) {
+        let inputEle = document.getElementById(contVal + '-img-upload-input');
+        let buttonEle = document.getElementById(contVal + '-img-upload-btn');
+        let chooseFileEle = document.getElementById(contVal + '-img-upload-initiator');
+
+        inputEle.value = '';
+        buttonEle.disabled = true;
+        targetEle.style.display = 'none';
+        chooseFileEle.innerText = "Choose Image to update "+ contVal + " screenshot";
+        chooseFileEle.style.cursor = 'pointer'
+      }
+
+    </script>
+  </head>
+
+  <body>
+    <div class="msg-container">
+      <label id="success-msg"></label>
+      <label id="error-msg"></label>
+    </div>
+
+    <div class="main-container" style="display:flex;">
+      <div class="old-img-div">
+        <div class="img-update-container" id="old-img-upload-container">
+          <div class="file-handler">
+            <span class="img-file-init-container">
+              <span class="img-upload-initiator" id="old-img-upload-initiator" onclick="selectImageFile(this, 'old')">
+                Choose Image to update old screenshot
+              </span>
+
+              <span class="remove-file" id="old-remove-file" onclick="removeSelectedFile(this, 'old')">
+                <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2C8.2,2,2,8.2,2,16s6.2,14,14,14s14-6.2,14-14S23.8,2,16,2z M16,28C9.4,28,4,22.6,4,16S9.4,4,16,4s12,5.4,12,12	S22.6,28,16,28z"></path><path d="M21.4 23L16 17.6 10.6 23 9 21.4 14.4 16 9 10.6 10.6 9 16 14.4 21.4 9 23 10.6 17.6 16 23 21.4z"></path></svg>
+              </span>
+            </span>
+
+            <button class="upload-btn" id="old-img-upload-btn" disabled onclick="uploadScreenshot(this, 'old')">
+              Upload
+            </button>
+
+            <div class="loader" id="old-upload-spinner"></div>
+            <input type="file" class="img-upload-input" id="old-img-upload-input" onchange="enableUploadButton(this, 'old')">
+
+          </div>
+        </div>
+
+        <img class="diff-img" id="old-diff-screenshot" src="{{ old_diff_image_url }}" />
+      </div>
+
+      <div class="new-img-div">
+        <div class="img-update-container" id="new-img-upload-container">
+          <div class="file-handler">
+            <span class="img-upload-initiator" id="new-img-upload-initiator" onclick="selectImageFile(this, 'new')">
+              Choose Image to update new screenshot
+            </span>
+
+            <span class="remove-file" id="new-remove-file" onclick="removeSelectedFile(this, 'new')">
+              <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2C8.2,2,2,8.2,2,16s6.2,14,14,14s14-6.2,14-14S23.8,2,16,2z M16,28C9.4,28,4,22.6,4,16S9.4,4,16,4s12,5.4,12,12	S22.6,28,16,28z"></path><path d="M21.4 23L16 17.6 10.6 23 9 21.4 14.4 16 9 10.6 10.6 9 16 14.4 21.4 9 23 10.6 17.6 16 23 21.4z"></path></svg>
+            </span>
+
+            <button class="upload-btn" id="new-img-upload-btn" disabled onclick="uploadScreenshot(this, 'new')">
+              Upload
+            </button>
+
+            <div class="loader" id="new-upload-spinner"></div>
+
+            <input type="file" class="img-upload-input" id="new-img-upload-input" onchange="enableUploadButton(this, 'new')">
+          </div>
+        </div>
+
+        <img class="diff-img" id="new-diff-screenshot" src="{{ new_diff_image_url }}" />
+      </div>
+    </div>
+  </body>
+</html>

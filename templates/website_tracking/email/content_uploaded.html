@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width">
+  </head>
+
+  <body>
+    <h4>
+      Editor: {{ editor }}
+    </h4>
+
+    {% for article in articles %}
+        {% if article.articleTitle != '' %}
+          <h2>
+            {{ article.articleTitle }}
+          </h2>
+        {% endif %}
+
+        <div>
+          <h3 style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;page-break-after: avoid;font-family: inherit;font-weight: 600;line-height: 27px;color: inherit;margin-top: 11px;margin-bottom: 10px;font-size: 17px;padding-left: 0px;padding-right: 0px;position: relative;overflow: hidden;">
+            <a href="#" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background: 0 0;color: #333;text-decoration: underline;float: left;padding-left: 0;">
+              {% autoescape off %}
+                {{ article.webUpdate.title }}
+              {% endautoescape %}
+            </a>
+          </h3>
+
+          <div style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;cursor: default;clear: both;display: block;overflow: hidden;margin-bottom: 10px;padding-left: 0px;padding-right: 0px;">
+            <p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;color: #929699;font-size: 11px;margin-bottom: 0;display: inline-block;vertical-align: middle;">
+              {% if "content_source" in article.bucketMap %}
+                {% for tag_name in article.bucketMap.content_source %}
+                  <span style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">
+                    <a href="#" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background: 0 0;color: #428bca;text-decoration: underline;">
+                      {% autoescape off %}
+                        {{ tag_name }}
+                      {% endautoescape %}
+                    </a>
+                  </span>
+                {% endfor %}
+                | {% autoescape off %} {{ article.webUpdate.approved_on }} {% endautoescape %}
+              {% else %}
+                  {{ article.webUpdate.created_on|date:'D, w b' }}
+              {% endif %}
+            </p>
+          </div>
+
+          <p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;line-height: 24px;font-size: 13px;border-bottom: 1px solid #E0E0E0;padding-bottom: 10px;padding-left: 0;padding-right: 0;margin-left: 0px;margin-right: 0px;">
+            {% autoescape off %}
+              {{ article.webUpdate.description }}
+            {% endautoescape %}
+          </p>
+
+          <div style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;cursor: default;clear: both;display: block;overflow: hidden;margin-bottom: 10px;padding-left: 0px;padding-right: 0px;">
+            <p>
+              <span>
+                Email Priority: {{ article.webUpdate.email_priority  }}
+              </span>
+
+              {% if article.webUpdate.rating %}
+                <p> Rating: {{ article.webUpdate.rating  }}</p>
+              {% endif %}
+            </p>
+
+            <ul style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;margin-top: 0;margin-bottom: 0;padding-left: 0;list-style: none;padding: 0;">
+              {% for bucket_id, tags in article.bucketMap.items %}
+                {% for tag_name in tags %}
+                  <li style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;position: relative;display: inline-block;float: left;margin-left: 0px;">
+                    <ul style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;margin-top: 0;margin-bottom: 0;padding: 0;">
+                      <li style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;color: #333;background: #FFF;height: 24px;line-height: 12px;padding: 2px 3px 3px 10px;font-size: 11px;margin-left: 3px; margin-right: 3px;position: relative;margin-bottom: 5px;margin-top: 2px;border-radius: 17px;float: left;box-shadow: 0 0 transparent;-webkit-box-shadow: 0 0 transparent;-ms-box-shadow: 0 0 transparent;-moz-box-shadow: 0 0 transparent;border: 1px solid #CCC;padding-top: 2px; padding-bottom: 0px;overflow: hidden;display: inline-block;min-height: 20px;">
+                        {% autoescape off %}
+                          <span style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;font-weight: 600;color: #555;margin-right: 11px;">{{ tag_name }}</span>
+                        {% endautoescape %}
+                      </li>
+                    </ul>
+                  </li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+
+          </div>
+        </div>
+    {% endfor %}
+  </body>
+</html>

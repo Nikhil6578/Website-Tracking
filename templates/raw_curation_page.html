@@ -1,0 +1,152 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Curation Page</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/vendors/bootstrap/4.0.0/bootstrap.min.css">
+
+  <meta name="theme-color" content="#fafafa">
+  <style>
+		.container-fluid {
+			max-width: 1440px;
+		}
+		.section-container {
+			margin-top: 20px;
+			padding: 32px;
+			border: 1px solid #cecece;
+			box-shadow: 1px 1px 11px;
+		}
+		.buttons-nav {
+			margin-top: 30px;
+			height: 38px;
+		}
+		.buttons-nav button{
+			float: right;
+			margin-left: 10px;
+		}
+		.space-20{
+			height: 20px;
+		}
+		.form-label {
+			font-size: 14px;
+			margin-bottom: 4px;
+			font-weight: bold;
+		}
+		.form-input-field {
+			border-radius: 0;
+			border: 1px solid #cecece;
+			width: 100%;
+		}
+		.form-textarea-field {
+			width: 100%;
+		}
+		.text-green {
+			color: #2a9c38;
+		}
+		.text-red {
+			color: #e44040;
+		}
+		.container-scroll {
+			max-height: 550px;
+			scroll-behavior: smooth;
+			overflow-y: auto;
+		}
+		.screenshot-container {
+			position: relative;
+		}
+		.screenshot-container button {
+			position: absolute;
+			margin-top: 10px;
+			right: 10px;
+		}
+  </style>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="section-container">
+			<h3>New website changes detected</h3>
+			<div class="buttons-nav">
+				<button type="button" class="btn btn-danger">Close</button>
+				<button type="button" class="btn btn-dark">Preview</button>
+				<button type="button" class="btn btn-secondary">Duplicate</button>
+				<button type="button" class="btn btn-primary">Save and add another</button>
+				<button type="button" class="btn btn-primary">Save and continue</button>
+				<button type="button" class="btn btn-primary">Save</button>
+			</div>
+		</div>
+		<div class="section-container">
+			<div class="row">
+				<div class="col-md-6 container-scroll">
+					<form action="">
+						<div class="row">
+							<div class="col-md-4">
+								<p class="form-label" for="">Date</p>
+								<input class="form-input-field" type="text">
+							</div>
+							<div class="col-md-8">
+								<p class="form-label" for="">URL</p>
+								<input class="form-input-field" type="text">
+							</div>
+						</div>
+						<div class="space-20"></div>
+						<p class="form-label" for="">Headline</p>
+						<input class="form-input-field" type="text">
+						<div class="space-20"></div>
+						<p class="form-label" for="">Summary</p>
+						<textarea class="form-textarea-field" name="" id="" cols="15" rows="5"></textarea>
+						<div class="space-20"></div>
+						<p class="form-label" for="">Tags</p>
+						<input class="form-input-field" type="text">
+					</form>
+				</div>
+				<div class="col-md-6 container-scroll">
+					<h4>Difference in Text</h4>
+					<hr>
+					<h5>Added</h5>
+					<p class="text-green">
+						Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+					</p>
+					<h5>Removed</h5>
+					<p class="text-red">
+						Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="section-container">
+			<div class="row">
+				<div class="col-md-6">
+					<h5>Old Screenshot</h5>
+					<hr>
+					<img src="https://mobirise.com/html-templates/assets/images/service11.jpg" alt="">
+				</div>
+				<div class="col-md-6 screenshot-container">
+					<h5>New Screenshot</h5>
+					<hr>
+					<button type="button" class="btn btn-dark "> Download Raw HTML</button>
+					<img src="https://mobirise.com/html-templates/assets/images/service11.jpg" alt="">
+				</div>
+			</div>
+		</div>
+		<div class="space-20"></div>
+		<div class="space-20"></div>
+	</div>
+    <script src="{{ MEDIA_URL }}js/vendors/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{{ MEDIA_URL }}js/vendors/bootstrap/4.0.0/bootstrap.min.js"></script>
+    <script src="{{ MEDIA_URL }}js/vendors/popper/1.12.9/popper.min.js"></script>
+
+</body>
+</html>

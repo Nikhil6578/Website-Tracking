@@ -1,0 +1,467 @@
+<div ng-if="serp.canAddEditStory"
+     class="e-card-status" style="margin-top: 0;margin-left: 776px;">
+  <a ng-if="doc.status!=2" ng-click="serp.changeStoryStatus(2, doc)"
+     class="serp-status-btn Publish">
+      Publish
+    </a>
+
+  <a ng-if="doc.status!=-1" ng-click="serp.changeStoryStatus(-1, doc)"
+     class="serp-status-btn Reject">
+    Reject
+  </a>
+
+  <a ng-if="(serp.permissions.hasSI && (doc.status==2 || doc.status=='-1'))" ng-click="serp.changeStoryStatus(5, doc)"
+     class="serp-status-btn OnHold">
+    Onhold
+  </a>
+
+  <a ng-if="(serp.permissions.hasSI && (doc.status==2 && doc.approvedBy=='admin'))" ng-click="serp.changeStoryApprovedBy(doc)"
+     class="serp-status-btn Publish" ng-class="{ 'active-status': doc.status==2 && doc.approvedBy=='admin'}">
+    Assert
+  </a>
+
+  <a ng-if="(serp.permissions.hasSI && (doc.status==2 && doc.approvedBy!='admin'))"
+     class="serp-status-btn Publish" ng-class="{ 'active-status': doc.status==2 && doc.approvedBy!='admin'}">
+    Asserted
+  </a>
+
+  <span class="status-btn-loader">
+    <i ng-show="0" class="fa fa-circle-o-notch fa-spin fa-3x fa-fw">
+    </i>
+  </span>
+</div>
+
+<article class="article-section article_section_mi"
+         ng-class="{
+           'edit-in-progress': doc.editedStatus === serp.EditedStatus.initial,
+           'edit-done-with-no-error': doc.editedStatus === serp.EditedStatus.success,
+           'edit-done-with-error': doc.editedStatus === serp.EditedStatus.error
+         }"
+         ng-class="opened">
+
+  <div class="curation-head-container">
+    <div class="curation-on-action" ng-if="serp.IS_STAFF && serp.curationToggle == true">
+      <div>
+        <span class="view-cluster st-action serp-action-block" tooltip="{[{::'View Related' | cfyTranslate}]}">
+          <a ng-href="/stories/{[{::doc.id}]}/related/" target="_blank">
+            <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M15 6h13v2H15zm0 18h13v2H15zM4 15h13v2H4zm3-4a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2zm0 24a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2zm18-3a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm0-6a2 2 0 1 0 2 2 2 2 0 0 0-2-2z">
+              </path>
+            </svg>
+          </a>
+        </span>
+
+        <span class="view-cluster st-action serp-action-block" tooltip="{[{::'View Duplicates' | cfyTranslate}]}">
+          <a ng-href="/stories/{[{::doc.id}]}/duplicates/" target="_blank">
+            <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M26,22a3.86,3.86,0,0,0-2,.57l-3.09-3.1a6,6,0,0,0,0-6.94L24,9.43A3.86,3.86,0,0,0,26,10a4,4,0,1,0-4-4,3.86,3.86,0,0,0,.57,2l-3.1,3.09a6,6,0,0,0-6.94,0L9.43,8A3.86,3.86,0,0,0,10,6a4,4,0,1,0-4,4,3.86,3.86,0,0,0,2-.57l3.09,3.1a6,6,0,0,0,0,6.94L8,22.57A3.86,3.86,0,0,0,6,22a4,4,0,1,0,4,4,3.86,3.86,0,0,0-.57-2l3.1-3.09a6,6,0,0,0,6.94,0L22.57,24A3.86,3.86,0,0,0,22,26a4,4,0,1,0,4-4ZM16,20a4,4,0,1,1,4-4A4,4,0,0,1,16,20Z">
+              </path>
+            </svg>
+          </a>
+        </span>
+      </div>
+    </div>
+
+    <div class="curation-off-action" ng-if="serp.curationToggle == false">
+
+    </div>
+
+    <div class="common-action">
+      <span ng-if="serp.subscriberPermissions.canEditDuplicates" class="view-cluster st-action serp-action-block" tooltip="{[{::'Edit Duplicates' | cfyTranslate}]}">
+        <a ng-href="" ng-click="serp.addDuplicate(doc)">
+          <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="will-change: transform;vertical-align: middle" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M25.7,9.3l-7-7A.91.91,0,0,0,18,2H8A2,2,0,0,0,6,4V28a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V10A.91.91,0,0,0,25.7,9.3ZM18,4.4,23.6,10H18ZM24,28H8V4h8v6a2,2,0,0,0,2,2h6Z"></path><path d="M21 19L17 19 17 15 15 15 15 19 11 19 11 21 15 21 15 25 17 25 17 21 21 21 21 19z"></path>
+          </svg>
+        </a>
+      </span>
+      <span ng-if="serp.IS_STAFF && serp.subscriberLevel === 4" >
+        <a ng-href="{[{serp.getAdminStoryUrlFromUUID(doc.id)}]}" target="_blank">
+          <span class="edit-in-admin st-action serp-action-block" tooltip="{[{::'Edit in admin' | cfyTranslate}]}">
+              <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"></path>
+                <path d="M29.54,5.76l-3.3-3.3a1.6,1.6,0,0,0-2.24,0l-14,14V22h5.53l14-14a1.6,1.6,0,0,0,0-2.24ZM14.7,20H12V17.3l9.44-9.45,2.71,2.71ZM25.56,9.15,22.85,6.44l2.27-2.27,2.71,2.71Z"></path>
+              </svg>
+          </span>
+        </a>
+      </span>
+
+      <span ng-if="serp.subscriberPermissions.storyLogAccess || serp.IS_STAFF" class="st-change-log st-action serp-action-block">
+        <a href="/stories/{[{doc.id}]}/history" target="_blank">
+          <i tooltip="{[{::'View Log' | cfyTranslate}]}">
+            <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="will-change: transform;vertical-align: middle;" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" >
+              <path d="M20.59 22L15 16.41V7h2v8.58l5 5.01L20.59 22z"></path>
+              <path d="M16 2A13.94 13.94 0 0 0 6 6.23V2H4v8h8V8H7.08A12 12 0 1 1 4 16H2A14 14 0 1 0 16 2z"></path>
+            </svg>
+          </i>
+        </a>
+      </span>
+
+      <span ng-if="doc.rssFeedId && serp.IS_STAFF" class="st-change-log st-action serp-action-block">
+        <a ng-href="{[{ serp.ADMIN_URL }]}publications/rssfeed/{[{::doc.rssFeedId}]}/" target="_blank">
+          <i tooltip="{[{::'View Rss Feed' | cfyTranslate}]}">
+            <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" style="will-change: transform;vertical-align: middle;">
+              <path d="M8,18c-3.3,0-6,2.7-6,6s2.7,6,6,6s6-2.7,6-6C14,20.7,11.3,18,8,18z M8,28c-2.2,0-4-1.8-4-4s1.8-4,4-4s4,1.8,4,4	C12,26.2,10.2,28,8,28z"></path><path d="M30,24h-2C28,13,19,4,8,4V2C20.1,2,30,11.9,30,24z"></path><path d="M22,24h-2c0-6.6-5.4-12-12-12v-2C15.7,10,22,16.3,22,24z"></path>
+            </svg>
+          </i>
+        </a>
+      </span>
+
+      <span ng-if="doc.searchKeywordId && serp.IS_STAFF" class="st-change-log st-action serp-action-block">
+        <a ng-href="{[{ serp.ADMIN_URL }]}search_keyword/searchkeywordsource/?sk_clients__id={[{::doc.searchKeywordId}]}" target="_blank">
+          <i tooltip="{[{::'View Search Keyword' | cfyTranslate}]}">
+            <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" style="will-change: transform;vertical-align: middle;"><polygon points="13.71 12.29 7.41 6 13 6 13 4 4 4 4 13 6 13 6 7.41 12.29 13.71 13.71 12.29"></polygon>
+              <path d="M28,30H12a2,2,0,0,1-2-2V18h2V28H28V12H18V10H28a2,2,0,0,1,2,2V28A2,2,0,0,1,28,30Z"></path><path d="M22,15H17v2h5v2H18a2,2,0,0,0-2,2v2a2,2,0,0,0,2,2h6V17A2,2,0,0,0,22,15Zm0,8H18V21h4Z"></path>
+            </svg>
+          </i>
+        </a>
+      </span>
+
+      <span ng-if="doc.rootId && serp.IS_STAFF" class="st-change-log st-action serp-action-block">
+        <a ng-href="{[{serp.getAdminStoryUrlFromUUID(doc.rootId)}]}" ng-class="{'serp-action-link-disabled': doc.id == doc.rootId}" target="_blank">
+          <i tooltip="{[{::'View root in admin' | cfyTranslate}]}">
+            <svg class="serp-action-icn" ng-class="{'serp-action-icn-disabled': doc.id == doc.rootId}" focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" style="will-change: transform;vertical-align: middle;">
+              <path d="M26,28H6a2,2,0,0,1-2-2V6A2,2,0,0,1,6,4h9V6H6V26H26V17h2v9A2,2,0,0,1,26,28Z"></path><path d="M21 2L21 4 26.59 4 18 12.59 19.41 14 28 5.41 28 11 30 11 30 2 21 2z"></path>
+            </svg>
+          </i>
+        </a>
+      </span>
+
+      <span class="st-report st-action serp-action-block" tooltip="{[{::'Report Issue' | cfyTranslate}]}">
+        <a ng-href="" ng-click="serp.reportIssue(doc)">
+          <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: middle" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M6 30H4V2h24l-5.8 9 5.8 9H6zm0-12h18.33l-4.53-7 4.53-7H6z"></path>
+          </svg>
+        </a>
+      </span>
+
+      <a ng-if="serp.hasAccessToContifyPR" ng-click="serp.popItUp(doc.id)" target="_blank">
+        <span class="add-to-pr st-action serp-action-block" tooltip="{[{::'Add in PR' | cfyTranslate}]}" style="position: relative;top: 2px;">
+          <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: sub;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8.5 7.5V3h-1v4.5H3v1h4.5V13h1V8.5H13v-1z"></path>
+          </svg>
+        </span>
+      </a>
+
+      <span class="edit-pencil-wrapper st-action serp-action-block" ng-if="serp.canAddEditStory" ng-click="serp.onClickEdit(doc)">
+        <i class="edit-st-content"
+           tooltip="{[{::'Edit' | cfyTranslate}]}">
+          <svg class="serp-action-icn" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M1 13h14v1H1zm11.7-8.5c.4-.4.4-1 0-1.4l-1.8-1.8c-.4-.4-1-.4-1.4 0L2 8.8V12h3.2l7.5-7.5zM10.2 2L12 3.8l-1.5 1.5-1.8-1.8L10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z"></path>
+          </svg>
+        </i>
+      </span>
+
+      <span ng-if="serp.subscriberLevel === 4">
+        <i class="top-news-unmarked st-action serp-action-block" ng-if="doc.emailPriority!=1" ng-click="doc.markTopNews(1)" tooltip="{[{::'Mark Top News' | cfyTranslate}]}">
+          <svg class="serp-action-icn_check" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: sub;margin-top: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 2a14 14 0 1 0 14 14A14 14 0 0 0 16 2zm0 26a12 12 0 1 1 12-12 12 12 0 0 1-12 12z"></path>
+            <path d="M14 21.5l-5-4.96 1.59-1.57L14 18.35 21.41 11 23 12.58l-9 8.92z"></path>
+          </svg>
+        </i>
+
+        <i class="top-news-marked st-action serp-action-block" ng-if="doc.emailPriority==1" ng-click="doc.markTopNews(-1)" tooltip="{[{::'Top News' | cfyTranslate}]}">
+          <svg class="serp-action-icn_checkfilled" focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;vertical-align: sub;margin-top: 4px;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M16 2a14 14 0 1 0 14 14A14 14 0 0 0 16 2zm-2 19.5l-5-5 1.59-1.5L14 18.35 21.41 11 23 12.58z"></path>
+          </svg>
+        </i>
+      </span>
+    </div>
+  </div>
+
+  <div class="article-heading">
+    <!-- showing server side rendered content for zte corp-->
+    <span ng-click="serp.toggleDocSelection(doc)"
+          class="checkbox fa fa-square-o" ng-class="{'fa-check-square': doc.selected, 'fa-square': doc.addedToNewsletter}">
+
+    </span>
+
+    <div class="engagement-wrapper">
+      <span class="total-eng total-eng-m" ng-class="serp.getHelperClass(doc.monitoring_channel_id, 'ENGAGEMENT_SCORE_CLASS')">
+        <span class="post-source-m">
+          <i class="fa" ng-class="serp.getHelperClass(doc.monitoring_channel_id, 'SOURCE_CLASS')"
+             ng-if="serp.monitoringChannel.NEWS_WEBSITES != doc.monitoring_channel_id || serp.monitoringChannel.WIRED_NEWS != doc.monitoring_channel_id">
+          </i>
+
+          <span ng-if="serp.monitoringChannel.NEWS_WEBSITES == doc.monitoring_channel_id || serp.monitoringChannel.WIRED_NEWS == doc.monitoring_channel_id" class="news-websites-ico">
+            N
+          </span>
+        </span>
+      </span>
+    </div>
+
+    <div class="mtag-repeat">
+      <div class="logo-name-wrapper">
+        <div class="comp-ppl-logos" >
+          <img ng-if="doc.entityInfo.logo !== undefined" ng-src="{[{::doc.entityInfo.logo}]}">
+
+          <img ng-if="doc.entityInfo.logo == undefined" class="icon icons8-Full-Moon" width="36" height="36" src="data:image/png;base64,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">
+        </div>
+
+        <span class="monit-comp-title moc-title-social">
+          <span ng-if="doc.entityInfo.name !== undefined && ((doc.monitoring_channel_id.indexOf(serp.monitoringChannel.TWITTER) !== -1 && doc.entityInfo.twitter == undefined) || doc.monitoring_channel_id.indexOf(serp.monitoringChannel.TWITTER) == -1)">
+            <span class="monit-comp-span">
+              {[{::doc.entityInfo.name}]}
+            </span>
+          </span>
+
+          <span ng-if="doc.monitoring_channel_id.indexOf(serp.monitoringChannel.TWITTER) != -1 && doc.generic_attributes.indexOf(serp.isMention) < 0 && doc.entityInfo.twitter !== undefined"
+                class="moc-title-social twitter-handle" tooltip="{[{:: doc.entityInfo.name }]}">
+            <a href="{[{ doc.entityInfo.twitter }]}" target="_blank">
+              @{[{ serp.getTwitterHandle(doc.entityInfo.twitter) }]}
+            </a>
+          </span>
+
+          <span ng-if="doc.monitoring_channel_id.indexOf(serp.monitoringChannel.TWITTER) != -1 && doc.generic_attributes.indexOf(serp.isMention) > -1 && doc.entityInfo.twitter !== undefined"
+                class="twitter-handle mentioned_tweet">
+              <a class="mentioned_item"
+                 tooltip="@{[{ serp.getTwitterHandle(doc.entityInfo.twitter) }]}"
+                 href="https://twitter.com/{[{ serp.getTwitterHandle(doc.entityInfo.twitter) }]}"
+                 target="_blank">
+                {[{:: doc.entityInfo.name }]}
+              </a>
+              <span class="mentioned_text">
+                was mentioned in the tweet.
+              </span>
+          </span>
+
+          <br>
+
+          <p class="subheading subheading-m date-source">
+            <span ng-if="doc.isPaidContentSource">
+              <i class="fa fa-lock paid-source-ico" tooltip="{[{::'Login at source required'}]}" aria-hidden="true">
+              </i>
+            </span>
+
+            <span ng-repeat="source in doc.source track by $index">
+              <a ng-href="{[{source.cs_domain_url}]}" target="_blank">
+                {[{source.name}]} &middot;
+              </a>{[{$last ? ($first ? '' : '') : ', '}]}
+            </span>
+
+            <span class="nf-pubdate">
+              {[{ doc.approvedOn | cfyDate }]}
+            </span>
+
+            <span ng-if="(doc.approvedOn | cfyDate) !== (doc.pubDate | cfyDate)">
+              (Published on {[{ doc.pubDate | cfyDate }]}
+              <span ng-if="serp.IS_STAFF">
+                &middot;
+                Created on {[{ doc.createdOn | cfyDate }]}
+              </span>
+              <span>)</span>
+            </span>
+          </p>
+        </span>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-md-7">
+            <p class="general-head-title general-head-title-m">
+            <a ng-if="!serp.isSocialUpdates(doc.monitoring_channel_id) || serp.monitoringChannel.COMPANY_WEBSITES == doc.monitoring_channel_id"
+                ng-href="/url/n/s/{[{::doc.id}]}"
+                target="_blank">
+                {[{ doc.title }]}
+            </a>
+            </p>
+        
+            <p ng-if="!serp.isSocialUpdates(doc.monitoring_channel_id)"
+                ng-class="{'sourcing-issue-card': doc.hasSourcingIssue()}" class="string toggle string_toggle">
+            {[{doc.lead}]}
+            </p>
+        
+            <p ng-if="serp.isSocialUpdates(doc.monitoring_channel_id)"
+                ng-class="{'sourcing-issue-card': doc.hasSourcingIssue()}" class="string toggle string_toggle">
+            <a class="general-title-link-mi" ng-href="/url/n/s/{[{::doc.id}]}" target="_blank" style="text-decoration: none;">
+                <span style="cursor:pointer;" ng-bind-html="doc.lead">
+                </span>
+            </a>
+            </p>
+        </div>
+        <div class="col-md-5">
+            <div ng-if="doc.imageUrl && !doc.previews" class="logo-string-toggle logo-string-toggle-m">
+            <span class="preview-logo-span">
+                <img ng-src="{[{doc.imageUrl}]}" class="preview-logo" >
+            </span>
+            </div>
+        </div>
+    </div>
+
+    <span ng-click="serp.toggleDocSelection(doc)"
+          ng-class="{'fa-check-square': doc.selected, 'fa-square': doc.addedToNewsletter}" class="checkbox fa fa-square-o">
+    </span>
+
+    <div class="article-rating rating-position-mi" ng-if="serp.showRatings">
+      <span ng-repeat="(rating, ratingName) in serp.ratings">
+        <i ng-click="serp.setRating($event, rating, doc)"
+           ng-class="{'fa-star': serp.activeStar(rating, doc) === true, 'fa-star-o': serp.activeStar(rating, doc) === false}" class="fa"
+           tooltip="{[{::ratingName | cfyTranslate}]}">
+        </i>
+      </span>
+    </div>
+  </div>
+
+  <div ng-if="doc.previews.length > 0" class="related-wrapper">
+    <div ng-repeat="preview in doc.previews track by $index">
+      <article ng-click="serp.redirectToPreviewUrl(preview.preview_id)"
+               ng-class="{'related-card-twitter': preview.preview_monitoring_channel == 'Twitter'}" class="related-article related-article-mi">
+
+        <div ng-if="doc.imageUrl" class="logo-string-toggle logo-string-toggle-m">
+          <img class="preview-logo" ng-src="{[{doc.imageUrl}]}">
+        </div>
+
+        <!--Not to show lead if preview's content source is 'Twitter' as title and lead text are same for quote-retweets-->
+        <div class="related-string related-sub-string-mi" ng-if="preview.preview_monitoring_channel != 'Twitter' ">
+          <div class="related-card related-head-mi" ng-if="preview.preview_monitoring_channel != 'Twitter' ">
+            <span class="related-title-mi">
+              <a class="related-title-link">
+                {[{ preview.preview_title }]}
+              </a>
+            </span>
+          </div>
+
+          <span>
+            {[{ preview.preview_lead |cfyTruncateWords:30}]}
+          </span>
+        </div>
+
+        <div class="related-string related-string-mi" ng-if="preview.preview_monitoring_channel == 'Twitter' ">
+          <span>
+            <a class="related-title-link">
+              {[{ preview.preview_title }]}
+            </a>
+          </span>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div class="comment-tag-box">
+    <div class="article-card--tabs">
+      <div class="tags tabs body--short-01 text-02" ng-class="{'active': doc.docTabs.tagsExpanded}" ng-click="doc.activeContainerTab('tagsExpanded')">
+        Tags
+      </div>
+
+      <div class="tags tabs body--short-01 text-02" ng-class="{'active': doc.docTabs.tagsExpanded}">
+          Changelog
+      </div>
+
+      <div ng-if="!serp.permissions.hasSI" ng-click="serp.comment.loadComments(doc)"
+           class="tags tabs body--short-01 text-02" ng-class="{'active': doc.docTabs.commentsExpanded}">
+        <span ng-if="doc.totalCommentsFound > 0" class="e-card-tag-att-img-counter label--01">{[{doc.totalCommentsFound}]}</span>
+        {[{'Comments'}]}
+      </div>
+
+      <div ng-if="doc.duplicates.length > 0" ng-click="doc.activeContainerTab('dupsExpanded')" ng-class="{'active': doc.docTabs.dupsExpanded}" class="tags tabs body--short-01 text-02">
+          {[{doc.dupsExpanded == false ? 'Similars' : 'Similars'}]}
+      </div>
+
+    </div>
+    <div class="article-tabs-display_block">
+      <div class="tags-list tags-content" collapse="!doc.docTabs.tagsExpanded">
+        <div class="filter-bar">
+          <ul class="nav nav-pills filter-left no-close">
+            <li ng-repeat="(bucket_id, bucket) in doc.tags">
+              <ul>
+                <li ng-if="!serp.STANDARD_TAGS_TO_HIDE.includes(bucket_id)" class="tag"
+                    ng-repeat="tag in bucket"
+                    ng-style="{ 'border-color' : (tag.isMonitored == true) ? serp.getHSLA(tag.bucket_name, bucket_id) : '',
+                     'background-color' : (tag.isMonitored == true) ? serp.getHSLA_new(tag.bucket_name, bucket_id) : '' }">
+                  <span class="icon-basic-archive-full bucket-icon-generated"
+                      ng-style="{'background-color': serp.getHSLA(tag.bucket_name, bucket_id)}">
+                    {[{ serp.getBucketInitial(tag.bucket_name) }]}
+                  </span>
+
+                  <span class="value">
+                    {[{ tag.name }]}
+                  </span>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- content area for changelog -->
+      <div class="tags-list tags-content">
+        Data goes here....
+      </div>
+
+      <div collapse="!doc.docTabs.commentsExpanded">
+        <div class="comment-text-container">
+          <p class="label--01 text-05 margin--0 margin-bottom--2" ng-show="doc.comments.length === 0">Start the conversation</p>
+          <p class="body--short-02 text-01 margin--0 margin-bottom--32" ng-show="doc.comments.length === 0">Be the first to leave a comment</p>
+          <div ng-show="doc.comments.length === 0">
+            <svg width="82px" height="82px" viewBox="0 0 82 82" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <g id="Commenting" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                  <g id="[Experimental]-Newsfeed-[Staff-User-·--Curation-Mode-·-Add-a-Comment]" transform="translate(-415.000000, -587.000000)">
+                      <g id=".bx--col-sm-12" transform="translate(400.000000, 224.000000)">
+                          <g id="&lt;article&gt;">
+                              <g id="&lt;figure&gt;" transform="translate(16.000000, 364.000000)">
+                                  <g id="question--and--answer">
+                                      <path d="M26.6666667,80 L16,63.9866667 L5.33333333,63.9866667 C2.4,63.9866667 0,61.5866667 0,58.6533333 L0,31.9866667 C0,29.0533333 2.4,26.6533333 5.33333333,26.6533333 L45.3333333,26.6533333 C48.2666667,26.6533333 50.6666667,29.0533333 50.6666667,31.9866667 L50.6666667,58.6533333 C50.6666667,61.5866667 48.2666667,63.9866667 45.3333333,63.9866667 L26.6666667,63.9866667 M61.3333333,42.6666667 L66.6666667,32 L74.6666667,32 C77.6,32 80,29.6 80,26.6666667 L80,5.33333333 C80,2.4 77.6,0 74.6666667,0 L42.6666667,0 C39.7333333,0 37.3333333,2.4 37.3333333,5.33333333 L37.3333333,26.6533333 M58.6666667,32 L50.6666667,32 M58.7146667,19.9866667 C58.7146667,17.024 59.1333333,16.1626667 60.92,15.144 C62.216,14.4026667 63.4826667,13.3013333 63.4826667,11.0986667 C63.4826667,8.26133333 61.3173333,6.664 58.6773333,6.664 C56.0186667,6.664 53.8506667,8.56 53.8506667,11.0986667" id="Shape" stroke="#8A3FFC" stroke-width="1.8" stroke-linejoin="round"></path>
+                                      <path d="M28.1331699,45.4626623 C28.1331699,46.9322727 26.9326471,48.125 25.4534314,48.125 C23.9742157,48.125 22.7736928,46.9322727 22.7736928,45.4626623 C22.7736928,43.9930519 23.9742157,42.8003247 25.4534314,42.8003247 C26.9326471,42.8003247 28.1331699,43.9930519 28.1331699,45.4626623 Z M38.8521242,42.8003247 C37.3729085,42.8003247 36.1723856,43.9930519 36.1723856,45.4626623 C36.1723856,46.9322727 37.3729085,48.125 38.8521242,48.125 C40.3313399,48.125 41.5318627,46.9322727 41.5318627,45.4626623 C41.5318627,43.9930519 40.3313399,42.8003247 38.8521242,42.8003247 Z M12.0547386,42.8003247 C10.5755229,42.8003247 9.375,43.9930519 9.375,45.4626623 C9.375,46.9322727 10.5755229,48.125 12.0547386,48.125 C13.5339542,48.125 14.7344771,46.9322727 14.7344771,45.4626623 C14.7344771,43.9930519 13.5339542,42.8003247 12.0547386,42.8003247 Z M58.9501634,25.8279221 C59.8746732,25.8279221 60.625,25.0824675 60.625,24.163961 C60.625,23.2454545 59.8746732,22.5 58.9501634,22.5 C58.0256536,22.5 57.2753268,23.2454545 57.2753268,24.163961 C57.2753268,25.0824675 58.0256536,25.8279221 58.9501634,25.8279221 Z" id="Shape" fill="#8A3FFC" fill-rule="nonzero"></path>
+                                  </g>
+                              </g>
+                          </g>
+                      </g>
+                  </g>
+              </g>
+            </svg>
+          </div>
+          <div class="comment-block" ng-repeat="comment in doc.comments" ng-include="'comments.html'"></div>
+          <a href="javascript:void(0);" ng-show="doc.comments.length !== 0 && doc.comments.length < doc.totalCommentsFound" class="body--long-01 interactive-01 margin--0 margin-bottom--32" ng-click="serp.comment.loadMoreComments(doc)">Load more comments</a>
+        </div>
+        <div class="comment-editor">
+          <div class="trix-editor-container">
+            <trix-editor
+              trix-placeholder="doc.trixPlaceholder"
+              input-value="doc._tmpComment"
+              spellcheck="false" class="trix-content"
+              ng-model="doc._tmpComment" angular-trix trix-initialize="trixInitialize(e, editor);"
+              trix-change="trixChange(e, editor);"
+              trix-focus="trixFocus(e, editor);" trix-blur="trixBlur(e, editor);">
+            </trix-editor>
+            <p ng-if="doc.trixPlaceholder" class="body--short-01 text-03 comment-placeholder">Add your comment...</p>
+            <button type="button" class="custom-btn btn--primary btn--width-160 btn--size-sm" style="position: absolute;right: 16px;bottom: 2px;"
+                    ng-click="serp.comment.addComment(doc, doc._tmpComment)" ng-class="{'btn--disabled': !doc._tmpComment}">{[{::'Post Comment' | cfyTranslate}]}
+              <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" style="float: right" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M17.74,30,16,29l4-7h6a2,2,0,0,0,2-2V8a2,2,0,0,0-2-2H6A2,2,0,0,0,4,8V20a2,2,0,0,0,2,2h9v2H6a4,4,0,0,1-4-4V8A4,4,0,0,1,6,4H26a4,4,0,0,1,4,4V20a4,4,0,0,1-4,4H21.16Z"></path><path d="M17 9L15 9 15 13 11 13 11 15 15 15 15 19 17 19 17 15 21 15 21 13 17 13 17 9z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="doc.duplicates.length > 0 " class="tags-list tags-content nf-duplicates" collapse="!doc.docTabs.dupsExpanded" >
+          <ul class="duplicate-sitems-m">
+            <li ng-repeat="duplicates in doc.duplicates">
+              <div class="duplicates">
+                <span ng-click="serp.toggleDocSelection(duplicates)"
+                      ng-class="{'fa-check-square': duplicates.selected, 'fa-square': duplicates.addedToNewsletter}" class="checkbox fa fa-square-o">
+                </span>
+
+                <a ng-href="/url/n/s/{[{::duplicates.id}]}" target="_blank">
+                  {[{ duplicates.title }]}
+                </a>
+              </div>
+
+              <div>
+                <img ng-src="{[{ ::labelTag.label }]}" ng-repeat="labelTag in duplicates.tagsWithLabel" tooltip="{[{ ::labelTag.name }]}"/>
+
+                <p class="subheading sub_date_source" >
+                  <span ng-repeat="source in duplicates.sources">
+                    <a ng-href="{[{source.url}]}" target="_blank">
+                      {[{ source.name }]}</a>{[{ $last ? ($first ? '' : '') : ', ' }]}
+                  </span>
+
+                  {[{ duplicates.approved_on | cfyDate }]}
+
+                  <span ng-if="(duplicates.approved_on | cfyDate) !== (duplicates.pub_date | cfyDate)">
+                    ( Published on {[{ duplicates.pub_date | cfyDate }]})
+                  </span>
+                </p>
+              </div>
+            </li>
+          </ul>
+      </div>
+
+    </div>
+  </div>
+</article>

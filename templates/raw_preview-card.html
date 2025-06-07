@@ -1,0 +1,172 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+	<!-- Place favicon.ico in the root directory -->
+	<link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,200,300,300i,400,400i,500,500i,600,600i,700,700i&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ MEDIA_URL }}css/vendors/bootstrap/4.0.0/bootstrap.min.css">
+  <meta name="theme-color" content="#fafafa">
+  <style>
+		body{
+			background: #f4f4f4;
+			font-family: "IBM Plex Sans",arial,sans-serif;
+		}
+		.container-fluid {
+			max-width: 1440px;
+		}
+		.article-card {
+			width: 750px;
+			margin: 10px 0px;
+			background-color: #fff;
+		}
+		.article-card-info {
+			padding: 16px;
+		}
+		.upper-panel .company-logo {
+			border: 1px solid #DCDCDC;
+			width: 48px;
+		}
+		.upper-panel .article-company-block {
+    	padding-top: 6px;
+		}
+		.upper-panel .company-name {
+			color: #161616;
+			font-size: 14px;
+			letter-spacing: .16px;
+			line-height: 18px;
+			margin-bottom: 2px;
+			font-weight: 500;
+		}
+		.upper-panel .publication-info {
+			margin-bottom: 0;
+		}
+		.label--01 {
+			font-size: 12px;
+			line-height: 16px;
+			font-weight: 400;
+			letter-spacing: 0.32px;
+		}
+		.text-05{
+			color: #6f6f6f;
+		}
+		.productive--heading-03 {
+			font-size: 20px;
+			line-height: 26px;
+			font-weight: 400;
+			letter-spacing: 0px;
+		}
+		.link-01{
+    	color: #0072C3;
+		}
+		.body--long-02 {
+			font-size: 16px;
+			line-height: 24px;
+			font-weight: 400;
+			letter-spacing: 0px;
+		}
+		.text-01{
+    	color: #161616;
+		}
+		.info-panel .article-heading{
+			margin-top: 16px;
+			margin-bottom: 12px;
+		}
+		.info-panel .article-description {
+			margin-bottom: 0;
+		}
+		.article-img {
+    	width: 100%;
+			margin-top: 16px;
+		}
+		.article-card--tabs {
+			padding: 0 16px;
+			border-bottom: 2px solid #F4F4F4;
+			margin-bottom: 16px;
+			height: 40px;
+		}
+		.article-card--tabs .tabs {
+			display: inline-block;
+			padding: 10px 16px;
+			cursor: pointer;
+			border-bottom: 2px solid #E0E0E0;
+			margin-right: 1px;
+			width: 176px;
+		}
+		.article-card--tabs .tabs:hover {
+    	border-bottom: 2px solid #C6C6C6;
+		}
+		.article-card--tabs .tabs.text-02.active {
+			color: #161616;
+			font-weight: 500;
+			border-bottom: 2px solid #0072C3;
+		}
+		.body--short-01 {
+			font-size: 14px;
+			font-weight: 400;
+			letter-spacing: .16px;
+			line-height: 18px;
+		}
+		.text-02 {
+    	color: #393939;
+		}
+		.article-tabs-display-block {
+    	padding: 0 16px 16px;
+		}
+  </style>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="article-card">
+			<div class="article-card-info">
+				<div class="row upper-panel">
+					<div class="col-md-1">
+						<img class="company-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRR62qMRpVlgLYrS8QEKxKq6WFIkOQRDtCwNw&usqp=CAU" alt="company-logo">
+					</div>
+					<div class="col-md-11 article-company-block">
+						<p class="company-name">Accenture</p>
+						<p class="publication-info label--01 text-05">Website change<span> &middot; 26 Nov 2020</span></p>
+					</div>
+				</div>
+				<div class="row info-panel">
+					<div class="col-md-7">
+						<p class="article-heading productive--heading-03 link-01">Lorem ipsum dolor sit amet; consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et</p>
+						<p class="article-description body--long-02 text-01">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+						</p>
+					</div>
+					<div class="col-md-5">
+						<img class="article-img" src="https://officesnapshots.com/wp-content/uploads/2020/05/accenture-offices-bucharest-4-700x454.jpg" alt="">
+					</div>
+				</div>
+			</div>
+			<div class="tabs-section">
+				<div class="article-card--tabs">
+					<div class="tabs body--short-01 text-02">Tags</div>
+					<div class="tabs active body--short-01 text-02">Changelog</div>
+					<div class="tabs body--short-01 text-02">Comments</div>
+				</div>
+				<div class="article-tabs-display-block">
+					<div class="tabs-container">
+						Changelog goes here...
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    <script src="{{ MEDIA_URL }}js/vendors/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{{ MEDIA_URL }}js/vendors/bootstrap/4.0.0/bootstrap.min.js"></script>
+    <script src="{{ MEDIA_URL }}js/vendors/popper/1.12.9/popper.min.js"></script>
+</body>
+</html>
